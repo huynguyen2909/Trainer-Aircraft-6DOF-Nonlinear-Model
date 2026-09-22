@@ -1,4 +1,4 @@
-#include "navion/components/fuselage/FuselageComponent.hpp"
+#include "trainer_aircraft/components/fuselage/FuselageComponent.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -33,8 +33,8 @@ void requireNear(
 }
 
 void requireVecNear(
-    const navion::Vec3& actual,
-    const navion::Vec3& expected,
+    const trainer_aircraft::Vec3& actual,
+    const trainer_aircraft::Vec3& expected,
     double tolerance,
     const std::string& message
 )
@@ -46,16 +46,16 @@ void requireVecNear(
 
 struct Fixture
 {
-    navion::RigidBodyState state{};
-    navion::ControlInputs controls{};
-    navion::Environment environment{};
-    navion::FlightCondition flight{};
-    navion::MassProperties mass{
+    trainer_aircraft::RigidBodyState state{};
+    trainer_aircraft::ControlInputs controls{};
+    trainer_aircraft::Environment environment{};
+    trainer_aircraft::FlightCondition flight{};
+    trainer_aircraft::MassProperties mass{
         1000.0,
-        navion::Matrix3::diagonal(1000.0, 1500.0, 1800.0)
+        trainer_aircraft::Matrix3::diagonal(1000.0, 1500.0, 1800.0)
     };
 
-    navion::EvaluationContext context() const
+    trainer_aircraft::EvaluationContext context() const
     {
         return {0.0, state, controls, environment, flight, mass};
     }
@@ -63,11 +63,11 @@ struct Fixture
 
 void testOriginalNicolosiDragRegression()
 {
-    navion::fuselage::FuselageAerodynamics model(
-        navion::fuselage::makeNicolosiReferenceFuselageGeometry(),
-        navion::fuselage::FuselageTuning{}
+    trainer_aircraft::fuselage::FuselageAerodynamics model(
+        trainer_aircraft::fuselage::makeNicolosiReferenceFuselageGeometry(),
+        trainer_aircraft::fuselage::FuselageTuning{}
     );
-    navion::fuselage::FuselageAeroState state;
+    trainer_aircraft::fuselage::FuselageAeroState state;
     state.rho_kgm3 = 1.0;
     state.mu_pas = 1.0;
     state.V_mps = 202.0e6 / 30.0;
@@ -82,8 +82,8 @@ void testOriginalNicolosiDragRegression()
 
 void testZeroSpeedBoundary()
 {
-    navion::fuselage::FuselageComponent fuselage(
-        navion::fuselage::makeT6cReferenceFuselageConfig()
+    trainer_aircraft::fuselage::FuselageComponent fuselage(
+        trainer_aircraft::fuselage::makeT6cReferenceFuselageConfig()
     );
     Fixture fixture;
     const auto result = fuselage.evaluateDetailed(fixture.context());
@@ -97,9 +97,9 @@ void testZeroSpeedBoundary()
 
 void testAdapterDirectionAndMomentTransfer()
 {
-    auto config = navion::fuselage::makeT6cReferenceFuselageConfig();
+    auto config = trainer_aircraft::fuselage::makeT6cReferenceFuselageConfig();
     config.aerodynamicReferencePositionFromCgBodyM = {1.2, -0.1, 0.4};
-    navion::fuselage::FuselageComponent fuselage(config);
+    trainer_aircraft::fuselage::FuselageComponent fuselage(config);
 
     Fixture fixture;
     fixture.flight.airRelativeVelocityBodyMps = {58.0, 5.0, 14.0};
@@ -116,14 +116,14 @@ void testAdapterDirectionAndMomentTransfer()
     const auto result = fuselage.evaluateDetailed(fixture.context());
     requireNear(result.dragForceBodyN.norm(), result.aerodynamicOutput.drag_n,
                 1.0e-10, "Adapter preserves scalar drag magnitude");
-    require(navion::dot(
+    require(trainer_aircraft::dot(
                 result.dragForceBodyN,
                 fixture.flight.airRelativeVelocityBodyMps
             ) < 0.0,
             "Fuselage drag opposes air-relative velocity");
-    const navion::Vec3 expectedMoment =
+    const trainer_aircraft::Vec3 expectedMoment =
         result.intrinsicMomentAtReferenceBodyNm +
-        navion::cross(
+        trainer_aircraft::cross(
             config.aerodynamicReferencePositionFromCgBodyM,
             result.dragForceBodyN
         );
@@ -134,10 +134,10 @@ void testAdapterDirectionAndMomentTransfer()
 
 void testBodyNegativeXMode()
 {
-    auto config = navion::fuselage::makeT6cReferenceFuselageConfig();
+    auto config = trainer_aircraft::fuselage::makeT6cReferenceFuselageConfig();
     config.dragDirectionMode =
-        navion::fuselage::DragDirectionMode::BodyNegativeX;
-    navion::fuselage::FuselageComponent fuselage(config);
+        trainer_aircraft::fuselage::DragDirectionMode::BodyNegativeX;
+    trainer_aircraft::fuselage::FuselageComponent fuselage(config);
 
     Fixture fixture;
     fixture.flight.airRelativeVelocityBodyMps = {40.0, 2.0, 3.0};

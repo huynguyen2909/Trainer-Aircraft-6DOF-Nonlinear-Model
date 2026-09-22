@@ -1,7 +1,7 @@
-#include "navion/config/ProvisionalNavionConfig.hpp"
-#include "navion/initialization/GroundStaticTrim.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/config/ProvisionalTrainerAircraftConfig.hpp"
+#include "trainer_aircraft/initialization/GroundStaticTrim.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <algorithm>
 #include <array>
@@ -56,9 +56,9 @@ struct EulerAngles
     double yawRad{0.0};
 };
 
-EulerAngles bodyToNedEuler(const navion::Quaternion& attitudeBodyToNed)
+EulerAngles bodyToNedEuler(const trainer_aircraft::Quaternion& attitudeBodyToNed)
 {
-    const navion::Quaternion q = attitudeBodyToNed.normalized();
+    const trainer_aircraft::Quaternion q = attitudeBodyToNed.normalized();
     EulerAngles result;
     result.rollRad = std::atan2(
         2.0 * (q.w * q.x + q.y * q.z),
@@ -99,9 +99,9 @@ SimulationPhase takeoffPhase(double timelineTimeS)
         : SimulationPhase::TakeoffFullRpm;
 }
 
-navion::ControlInputs groundStaticTrimControls()
+trainer_aircraft::ControlInputs groundStaticTrimControls()
 {
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.throttle = 0.0;
     controls.propellerEnabled = false;
     controls.propellerSpeedScale = 0.0;
@@ -116,14 +116,14 @@ navion::ControlInputs groundStaticTrimControls()
     return controls;
 }
 
-navion::ControlInputs preReleaseHoldControls()
+trainer_aircraft::ControlInputs preReleaseHoldControls()
 {
     return groundStaticTrimControls();
 }
 
-navion::ControlInputs takeoffRollControls(double timelineTimeS)
+trainer_aircraft::ControlInputs takeoffRollControls(double timelineTimeS)
 {
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.propellerSpeedScale = propellerSpeedScale(timelineTimeS);
     controls.throttle = controls.propellerSpeedScale;
     controls.propellerEnabled = true;
@@ -138,9 +138,9 @@ navion::ControlInputs takeoffRollControls(double timelineTimeS)
     return controls;
 }
 
-navion::RigidBodyState makeInitialGroundGuess(
-    const navion::ProvisionalNavionConfig& aircraft,
-    const navion::Environment& environment
+trainer_aircraft::RigidBodyState makeInitialGroundGuess(
+    const trainer_aircraft::ProvisionalTrainerAircraftConfig& aircraft,
+    const trainer_aircraft::Environment& environment
 )
 {
     double totalStrutStiffnessNpm = 0.0;
@@ -162,14 +162,14 @@ navion::RigidBodyState makeInitialGroundGuess(
         aircraft.massProperties.massKg * environment.gravityNedMps2.z /
         totalStrutStiffnessNpm;
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.positionNedM.z =
         aircraft.landingGear.groundDownPositionNedM -
         referenceGearDownM + approximateCompressionM;
     return state;
 }
 
-void enforceReleasedBrakes(const navion::ControlInputs& controls)
+void enforceReleasedBrakes(const trainer_aircraft::ControlInputs& controls)
 {
     if (controls.brakeLeft != 0.0 || controls.brakeRight != 0.0)
     {
@@ -177,8 +177,8 @@ void enforceReleasedBrakes(const navion::ControlInputs& controls)
     }
 }
 
-const navion::BodyLoad& componentLoad(
-    const navion::ModelEvaluation& evaluation,
+const trainer_aircraft::BodyLoad& componentLoad(
+    const trainer_aircraft::ModelEvaluation& evaluation,
     std::string_view name
 )
 {
@@ -195,7 +195,7 @@ const navion::BodyLoad& componentLoad(
     );
 }
 
-bool isAirborneCandidate(const navion::ModelEvaluation& evaluation)
+bool isAirborneCandidate(const trainer_aircraft::ModelEvaluation& evaluation)
 {
     return evaluation.groundContactCount == 0U &&
         evaluation.groundNormalLoad.forceBodyN.norm() <=
@@ -246,25 +246,25 @@ public:
     void write(
         double timeS,
         SimulationPhase phase,
-        const navion::RigidBodyState& state,
-        const navion::ControlInputs& controls,
-        const navion::Environment& environment,
-        const navion::MassProperties& massProperties,
-        const navion::ModelEvaluation& evaluation
+        const trainer_aircraft::RigidBodyState& state,
+        const trainer_aircraft::ControlInputs& controls,
+        const trainer_aircraft::Environment& environment,
+        const trainer_aircraft::MassProperties& massProperties,
+        const trainer_aircraft::ModelEvaluation& evaluation
     )
     {
-        const navion::Quaternion attitude =
+        const trainer_aircraft::Quaternion attitude =
             state.attitudeBodyToNed.normalized();
         const EulerAngles euler = bodyToNedEuler(attitude);
-        const navion::Vec3 gravityAccelerationBody =
+        const trainer_aircraft::Vec3 gravityAccelerationBody =
             attitude.conjugate().rotate(environment.gravityNedMps2);
-        const navion::Vec3 gravityForceBody =
+        const trainer_aircraft::Vec3 gravityForceBody =
             massProperties.massKg * gravityAccelerationBody;
-        const navion::Vec3 netForceBody =
+        const trainer_aircraft::Vec3 netForceBody =
             evaluation.totalComponentLoad.forceBodyN + gravityForceBody;
-        const navion::Vec3& netMomentBody =
+        const trainer_aircraft::Vec3& netMomentBody =
             evaluation.totalComponentLoad.momentAboutCgBodyNm;
-        const navion::Vec3 velocityNedMps =
+        const trainer_aircraft::Vec3 velocityNedMps =
             attitude.rotate(state.velocityBodyMps);
         const auto& derivative = evaluation.stateDerivative;
 
@@ -313,7 +313,7 @@ public:
 
         for (const LoggedComponent& component : loggedComponents)
         {
-            const navion::BodyLoad& load =
+            const trainer_aircraft::BodyLoad& load =
                 componentLoad(evaluation, component.modelName);
             stream_ << load.forceBodyN.x << ','
                     << load.forceBodyN.y << ','
@@ -360,17 +360,17 @@ int main(int argc, char** argv)
     const std::string csvPath =
         argc > 1 ? argv[1] : "stage5_3_takeoff_roll_30s.csv";
 
-    const navion::ProvisionalNavionConfig aircraft =
-        navion::makeProvisionalNavionConfig();
-    navion::NavionModel model(aircraft.massProperties);
-    navion::addProvisionalNavionComponents(model, aircraft);
+    const trainer_aircraft::ProvisionalTrainerAircraftConfig aircraft =
+        trainer_aircraft::makeProvisionalTrainerAircraftConfig();
+    trainer_aircraft::TrainerAircraftModel model(aircraft.massProperties);
+    trainer_aircraft::addProvisionalTrainerAircraftComponents(model, aircraft);
 
-    navion::Environment environment;
-    const navion::RigidBodyState initialGroundGuess =
+    trainer_aircraft::Environment environment;
+    const trainer_aircraft::RigidBodyState initialGroundGuess =
         makeInitialGroundGuess(aircraft, environment);
-    navion::RigidBodyState state = initialGroundGuess;
-    const navion::ControlInputs trimControls = groundStaticTrimControls();
-    const navion::ModelEvaluation initialGroundEvaluation = model.evaluate(
+    trainer_aircraft::RigidBodyState state = initialGroundGuess;
+    const trainer_aircraft::ControlInputs trimControls = groundStaticTrimControls();
+    const trainer_aircraft::ModelEvaluation initialGroundEvaluation = model.evaluate(
         -dtS,
         dtS,
         initialGroundGuess,
@@ -378,8 +378,8 @@ int main(int argc, char** argv)
         environment
     );
 
-    navion::GroundStaticTrimSolver trimSolver;
-    const navion::GroundStaticTrimResult trim = trimSolver.solve(
+    trainer_aircraft::GroundStaticTrimSolver trimSolver;
+    const trainer_aircraft::GroundStaticTrimResult trim = trimSolver.solve(
         model,
         state,
         trimControls,
@@ -439,26 +439,26 @@ int main(int argc, char** argv)
                  "t=[7,30]: rpm=2300; fixed_blade_pitch; "
                  "flap=elevator=aileron=rudder=0\n";
 
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RK4Integrator integrator;
     double timeS = 0.0;
     std::size_t step = 0U;
 
     // Integrate and log the two-second, zero-RPM, pre-release hold. The final
     // hold state at exactly t=2 s is logged below with released controls.
-    const navion::ControlInputs holdControls = preReleaseHoldControls();
+    const trainer_aircraft::ControlInputs holdControls = preReleaseHoldControls();
     const std::size_t holdStepCount = static_cast<std::size_t>(
         std::llround(preReleaseHoldDurationS / dtS)
     );
-    navion::ModelEvaluation report = trim.evaluation;
+    trainer_aircraft::ModelEvaluation report = trim.evaluation;
     for (std::size_t holdStep = 0U; holdStep < holdStepCount; ++holdStep)
     {
-        const navion::RigidBodyState next = integrator.step(
+        const trainer_aircraft::RigidBodyState next = integrator.step(
             timeS,
             dtS,
             state,
             [&model, &environment, &holdControls](
                 double stageTimeS,
-                const navion::RigidBodyState& stageState
+                const trainer_aircraft::RigidBodyState& stageState
             ) {
                 return model.evaluateDerivative(
                     stageTimeS,
@@ -499,7 +499,7 @@ int main(int argc, char** argv)
         }
     }
 
-    navion::ControlInputs controls = takeoffRollControls(timeS);
+    trainer_aircraft::ControlInputs controls = takeoffRollControls(timeS);
     enforceReleasedBrakes(controls);
     report = model.evaluate(timeS, dtS, state, controls, environment);
     csv.write(
@@ -520,15 +520,15 @@ int main(int argc, char** argv)
 
     while (timeS < simulationEndTimeS - 0.5 * dtS)
     {
-        const navion::RigidBodyState next = integrator.step(
+        const trainer_aircraft::RigidBodyState next = integrator.step(
             timeS,
             dtS,
             state,
             [&model, &environment](
                 double stageTimeS,
-                const navion::RigidBodyState& stageState
+                const trainer_aircraft::RigidBodyState& stageState
             ) {
-                const navion::ControlInputs stageControls =
+                const trainer_aircraft::ControlInputs stageControls =
                     takeoffRollControls(stageTimeS);
                 enforceReleasedBrakes(stageControls);
                 return model.evaluateDerivative(
@@ -616,6 +616,6 @@ int main(int argc, char** argv)
     std::cout << "# NOTE: z-Down decreasing indicates upward CG motion, but "
                  "liftoff also requires persistent loss of all ground contacts.\n";
     std::cout << "# NOTE: component parameters remain provisional proxies; "
-                 "this is not a validated Navion takeoff-performance result.\n";
+                 "this is not a validated TrainerAircraft takeoff-performance result.\n";
     return 0;
 }

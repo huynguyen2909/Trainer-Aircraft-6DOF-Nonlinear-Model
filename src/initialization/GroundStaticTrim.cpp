@@ -1,11 +1,11 @@
-#include "navion/initialization/GroundStaticTrim.hpp"
+#include "trainer_aircraft/initialization/GroundStaticTrim.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <stdexcept>
 
-namespace navion
+namespace trainer_aircraft
 {
 namespace
 {
@@ -108,7 +108,7 @@ void validateSettings(const GroundStaticTrimSettings& settings)
 }
 
 [[nodiscard]] StaticEvaluation evaluateStatic(
-    const NavionModel& model,
+    const TrainerAircraftModel& model,
     const RigidBodyState& reference,
     const std::array<double, 3>& unknowns,
     double yawRad,
@@ -190,7 +190,7 @@ GroundStaticTrimSolver::GroundStaticTrimSolver(
 }
 
 GroundStaticTrimResult GroundStaticTrimSolver::solve(
-    const NavionModel& model,
+    const TrainerAircraftModel& model,
     const RigidBodyState& initialGuess,
     const ControlInputs& staticControls,
     const Environment& environment
@@ -339,4 +339,4 @@ GroundStaticTrimSolver::settings() const noexcept
     return settings_;
 }
 
-} // namespace navion
+} // namespace trainer_aircraft

@@ -1,5 +1,5 @@
 @startuml
-title Navion Stage 2 - VS_HS Integration
+title TrainerAircraft Stage 2 - VS_HS Integration
 
 interface ILoadComponent {
   + computeLoad(context) : BodyLoad
@@ -24,7 +24,7 @@ class VerticalStabilizer {
   + evaluateDetailed(context) : VerticalStabilizerEvaluation
 }
 
-class NavionModel {
+class TrainerAircraftModel {
   - rigidBody : RigidBody6DOF
   - components : vector<unique_ptr<ILoadComponent>>
   + evaluate(...)
@@ -39,8 +39,8 @@ ILoadComponent <|.. HorizontalStabilizer
 ILoadComponent <|.. VerticalStabilizer
 HorizontalStabilizer o-- ILocalFlowField : optional
 VerticalStabilizer o-- ILocalFlowField : optional
-NavionModel o-- ILoadComponent
-NavionModel ..> LoadAccumulator
-NavionModel *-- RigidBody6DOF
-RK4Integrator ..> NavionModel : derivative callback
+TrainerAircraftModel o-- ILoadComponent
+TrainerAircraftModel ..> LoadAccumulator
+TrainerAircraftModel *-- RigidBody6DOF
+RK4Integrator ..> TrainerAircraftModel : derivative callback
 @enduml

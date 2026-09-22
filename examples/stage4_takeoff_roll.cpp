@@ -1,9 +1,9 @@
-#include "navion/components/landing_gear/LandingGearComponent.hpp"
-#include "navion/components/stabilizers/VATC_HorizontalStabilizer.hpp"
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
-#include "navion/components/propeller/PropellerModel.hpp"
+#include "trainer_aircraft/components/landing_gear/LandingGearComponent.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
+#include "trainer_aircraft/components/propeller/PropellerModel.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -15,9 +15,9 @@
 namespace
 {
 
-navion::HorizontalStabilizerConfig horizontalTail()
+trainer_aircraft::HorizontalStabilizerConfig horizontalTail()
 {
-    navion::HorizontalStabilizerConfig config;
+    trainer_aircraft::HorizontalStabilizerConfig config;
     config.Area = 3.99483072;
     config.TailSpan = 3.99741452;
     config.TailMAC = 1.01236110;
@@ -33,9 +33,9 @@ navion::HorizontalStabilizerConfig horizontalTail()
     return config;
 }
 
-navion::VerticalStabilizerConfig verticalTail()
+trainer_aircraft::VerticalStabilizerConfig verticalTail()
 {
-    navion::VerticalStabilizerConfig config;
+    trainer_aircraft::VerticalStabilizerConfig config;
     config.Area = 1.356384384;
     config.RudderArea = 0.7738823232;
     config.TailSpan = 1.50;
@@ -51,12 +51,12 @@ navion::VerticalStabilizerConfig verticalTail()
     return config;
 }
 
-navion::landing_gear::LandingGearParameters demonstrationGear()
+trainer_aircraft::landing_gear::LandingGearParameters demonstrationGear()
 {
-    using navion::landing_gear::BrakeGroup;
-    using navion::landing_gear::GearParameters;
-    using navion::landing_gear::LandingGearParameters;
-    using navion::landing_gear::SteeringMode;
+    using trainer_aircraft::landing_gear::BrakeGroup;
+    using trainer_aircraft::landing_gear::GearParameters;
+    using trainer_aircraft::landing_gear::LandingGearParameters;
+    using trainer_aircraft::landing_gear::SteeringMode;
 
     LandingGearParameters parameters;
     parameters.solverMaximumIterations = 50;
@@ -91,10 +91,10 @@ navion::landing_gear::LandingGearParameters demonstrationGear()
     return parameters;
 }
 
-navion::ControlInputs takeoffRollControls(double timeS)
+trainer_aircraft::ControlInputs takeoffRollControls(double timeS)
 {
     (void)timeS;
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.throttle = 1.0;
     controls.propellerEnabled = true;
     controls.landingGearExtended = true;
@@ -109,7 +109,7 @@ navion::ControlInputs takeoffRollControls(double timeS)
     return controls;
 }
 
-void enforceReleasedBrakes(const navion::ControlInputs& controls)
+void enforceReleasedBrakes(const trainer_aircraft::ControlInputs& controls)
 {
     if (controls.brakeLeft != 0.0 || controls.brakeRight != 0.0)
     {
@@ -121,43 +121,43 @@ void enforceReleasedBrakes(const navion::ControlInputs& controls)
 
 int main()
 {
-    // Provisional integration-demo data, not a validated Navion data set.
+    // Provisional integration-demo data, not a validated TrainerAircraft data set.
     constexpr double massKg = 1250.0;
     constexpr double rotationSpeedMps = 30.0;
     constexpr double dtS = 0.002;
     constexpr double maximumTimeS = 15.0;
 
-    const navion::MassProperties massProperties{
+    const trainer_aircraft::MassProperties massProperties{
         massKg,
-        navion::Matrix3::diagonal(5000.0, 10000.0, 12000.0)
+        trainer_aircraft::Matrix3::diagonal(5000.0, 10000.0, 12000.0)
     };
-    navion::NavionModel model(massProperties);
+    trainer_aircraft::TrainerAircraftModel model(massProperties);
     model.addLoadComponent(
-        std::make_unique<navion::HorizontalStabilizer>(horizontalTail())
+        std::make_unique<trainer_aircraft::HorizontalStabilizer>(horizontalTail())
     );
     model.addLoadComponent(
-        std::make_unique<navion::VerticalStabilizer>(verticalTail())
+        std::make_unique<trainer_aircraft::VerticalStabilizer>(verticalTail())
     );
 
-    auto propeller = navion::propeller::makeEstimatedNavionNaca5868_9Parameters();
+    auto propeller = trainer_aircraft::propeller::makeEstimatedTrainerAircraftNaca5868_9Parameters();
     propeller.radialElementCount = 12U;
     propeller.azimuthStationCount = 16U;
     model.addLoadComponent(
-        std::make_unique<navion::propeller::PropellerComponent>(propeller)
+        std::make_unique<trainer_aircraft::propeller::PropellerComponent>(propeller)
     );
     model.setGroundContactComponent(
-        std::make_unique<navion::landing_gear::LandingGearComponent>(
+        std::make_unique<trainer_aircraft::landing_gear::LandingGearComponent>(
             demonstrationGear()
         )
     );
 
-    navion::Environment environment;
-    navion::RigidBodyState state;
+    trainer_aircraft::Environment environment;
+    trainer_aircraft::RigidBodyState state;
     const double staticCompressionM =
         massKg * environment.gravityNedMps2.z / 210000.0;
     state.positionNedM.z = staticCompressionM - 1.0;
 
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RK4Integrator integrator;
     double timeS = 0.0;
     std::size_t step = 0U;
 
@@ -167,19 +167,19 @@ int main()
     while (timeS < maximumTimeS &&
            state.velocityBodyMps.norm() < rotationSpeedMps)
     {
-        const navion::ControlInputs acceptedControls =
+        const trainer_aircraft::ControlInputs acceptedControls =
             takeoffRollControls(timeS);
         enforceReleasedBrakes(acceptedControls);
 
-        const navion::RigidBodyState next = integrator.step(
+        const trainer_aircraft::RigidBodyState next = integrator.step(
             timeS,
             dtS,
             state,
             [&model, &environment](
                 double stageTimeS,
-                const navion::RigidBodyState& stageState
+                const trainer_aircraft::RigidBodyState& stageState
             ) {
-                const navion::ControlInputs stageControls =
+                const trainer_aircraft::ControlInputs stageControls =
                     takeoffRollControls(stageTimeS);
                 enforceReleasedBrakes(stageControls);
                 return model.evaluateDerivative(
@@ -194,7 +194,7 @@ int main()
 
         timeS += dtS;
         state = next;
-        const navion::ControlInputs endControls = takeoffRollControls(timeS);
+        const trainer_aircraft::ControlInputs endControls = takeoffRollControls(timeS);
         enforceReleasedBrakes(endControls);
         model.commitAcceptedStep(
             timeS,
@@ -206,7 +206,7 @@ int main()
 
         if (step % 250U == 0U)
         {
-            const navion::ModelEvaluation report = model.evaluate(
+            const trainer_aircraft::ModelEvaluation report = model.evaluate(
                 timeS,
                 dtS,
                 state,
@@ -227,6 +227,6 @@ int main()
               << " speed_mps=" << state.velocityBodyMps.norm()
               << " target_V_rotation_mps=" << rotationSpeedMps << '\n';
     std::cout << "# NOTE: Wing and Fuselage are absent; this is an architecture/"
-                 "PGS integration scenario, not a validated Navion takeoff.\n";
+                 "PGS integration scenario, not a validated TrainerAircraft takeoff.\n";
     return 0;
 }

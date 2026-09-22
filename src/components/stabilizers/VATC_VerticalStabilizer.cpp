@@ -1,4 +1,4 @@
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace navion
+namespace trainer_aircraft
 {
 namespace
 {
@@ -348,4 +348,4 @@ Vec3 VATC_VerticalStabilizer::positionFromCgBodyM() const noexcept
     };
 }
 
-} // namespace navion
+} // namespace trainer_aircraft

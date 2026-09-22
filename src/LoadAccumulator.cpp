@@ -1,8 +1,8 @@
-#include "navion/dynamics/LoadAccumulator.hpp"
+#include "trainer_aircraft/dynamics/LoadAccumulator.hpp"
 
 #include <stdexcept>
 
-namespace navion
+namespace trainer_aircraft
 {
 
 void LoadAccumulator::reset() noexcept
@@ -34,5 +34,5 @@ std::size_t LoadAccumulator::contributingLoadCount() const noexcept
     return contributingLoadCount_;
 }
 
-} // namespace navion
+} // namespace trainer_aircraft
 

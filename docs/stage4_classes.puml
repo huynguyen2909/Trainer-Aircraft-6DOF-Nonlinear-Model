@@ -1,5 +1,5 @@
 @startuml
-title Navion Stage 4 - Two-Phase Ground Contact Architecture
+title TrainerAircraft Stage 4 - Two-Phase Ground Contact Architecture
 
 interface ILoadComponent {
   + computeLoad(context) : BodyLoad
@@ -19,7 +19,7 @@ class VerticalStabilizer
 class PropellerComponent
 class LandingGearComponent
 class PGSFrictionSolver
-class NavionModel {
+class TrainerAircraftModel {
   - loadComponents
   - groundContactComponent
   - rigidBody
@@ -35,9 +35,9 @@ ILoadComponent <|.. VerticalStabilizer
 ILoadComponent <|.. PropellerComponent
 IGroundContactComponent <|.. LandingGearComponent
 LandingGearComponent *-- PGSFrictionSolver
-NavionModel o-- ILoadComponent
-NavionModel *-- IGroundContactComponent
-NavionModel ..> LoadAccumulator
-NavionModel *-- RigidBody6DOF
-RK4Integrator ..> NavionModel : derivative + accepted commit
+TrainerAircraftModel o-- ILoadComponent
+TrainerAircraftModel *-- IGroundContactComponent
+TrainerAircraftModel ..> LoadAccumulator
+TrainerAircraftModel *-- RigidBody6DOF
+RK4Integrator ..> TrainerAircraftModel : derivative + accepted commit
 @enduml

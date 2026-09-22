@@ -1,9 +1,9 @@
-#include "navion/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
 
 #include <cmath>
 #include <stdexcept>
 
-namespace navion
+namespace trainer_aircraft
 {
 
 RigidBodyState RK4Integrator::step(
@@ -116,5 +116,5 @@ RigidBodyState RK4Integrator::advance(
     return result;
 }
 
-} // namespace navion
+} // namespace trainer_aircraft
 

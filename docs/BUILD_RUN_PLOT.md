@@ -16,7 +16,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 
 New-Item -ItemType Directory -Force results
-.\build\navion_stage5_full_aircraft_takeoff_roll.exe results\takeoff_roll.csv
+.\build\trainer_aircraft_stage5_full_aircraft_takeoff_roll.exe results\takeoff_roll.csv
 ```
 
 Do not use the Unix form `./build/...` in Windows Command Prompt. In
@@ -30,7 +30,7 @@ cmake --build build-msvc --config Release
 ctest --test-dir build-msvc -C Release --output-on-failure
 
 New-Item -ItemType Directory -Force results
-.\build-msvc\Release\navion_stage5_full_aircraft_takeoff_roll.exe `
+.\build-msvc\Release\trainer_aircraft_stage5_full_aircraft_takeoff_roll.exe `
     results\takeoff_roll.csv
 ```
 
@@ -90,7 +90,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 mkdir -p results
-./build/navion_stage5_full_aircraft_takeoff_roll results/takeoff_roll.csv
+./build/trainer_aircraft_stage5_full_aircraft_takeoff_roll results/takeoff_roll.csv
 python3 tools/plot_takeoff_results.py results/takeoff_roll.csv --output-dir results/plots
 ```
 
@@ -100,4 +100,4 @@ The 30-second continuation intentionally goes beyond the former demonstration
 `V_rotation` stop, but no elevator rotation or flap deployment is commanded.
 The model uses provisional mixed-source parameters and lacks a dynamic engine,
 governor and validated full-envelope aerodynamic data. The plots demonstrate
-integrated software behaviour; they are not certified Navion performance.
+integrated software behaviour; they are not certified TrainerAircraft performance.

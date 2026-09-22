@@ -1,8 +1,8 @@
 @startuml
-title One RK4 Stage - Navion Stage 3
+title One RK4 Stage - TrainerAircraft Stage 3
 
 participant RK4Integrator as rk4
-participant NavionModel as model
+participant TrainerAircraftModel as model
 participant "HS / VS" as tails
 participant PropellerComponent as prop
 participant PropellerModel as bemt

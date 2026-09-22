@@ -2,7 +2,7 @@
 title One RK4 Outer Step - Stage 5.3 Full Aircraft, PGS and Load Reports
 
 participant RK4Integrator as rk4
-participant NavionModel as model
+participant TrainerAircraftModel as model
 participant "Wing / Fuselage / VS / HS / Propeller" as regular
 participant LandingGearComponent as gear
 participant PGSFrictionSolver as pgs

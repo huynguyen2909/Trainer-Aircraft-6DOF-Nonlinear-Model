@@ -1,0 +1,9 @@
+trainer_aircraft_core_tests 1 0.0444038
+trainer_aircraft_stabilizer_tests 1 0.0468391
+trainer_aircraft_propeller_tests 1 2.66193
+trainer_aircraft_landing_gear_tests 1 0.0471113
+trainer_aircraft_main_wing_tests 1 0.0384625
+trainer_aircraft_fuselage_tests 1 0.0375667
+trainer_aircraft_full_aircraft_tests 1 0.0323581
+trainer_aircraft_ground_static_trim_tests 1 0.0526242
+---

@@ -15,7 +15,7 @@
 11. radial/azimuth grid convergence;
 12. takeoff-speed sweep with an explicit numerical inflow guess;
 13. the common `ILoadComponent`/`BodyLoad` contract;
-14. end-to-end HS + VS + Propeller + `NavionModel` + RK4 integration;
+14. end-to-end HS + VS + Propeller + `TrainerAircraftModel` + RK4 integration;
 15. disabled-propeller zero load.
 
 The common-contract tests verify:
@@ -38,4 +38,4 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The propeller executable is named `navion_propeller_tests`.
+The propeller executable is named `trainer_aircraft_propeller_tests`.

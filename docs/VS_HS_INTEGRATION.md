@@ -6,7 +6,7 @@ Start from the root of the extracted Stage 1 project—the directory containing
 `CMakeLists.txt`, `include`, `src`, `tests`, and `docs`.
 
 1. Make a backup or commit the Stage 1 directory.
-2. Extract `Navion_6DOF_OOP_Stage2_VS_HS_Overlay.zip` directly into that root.
+2. Extract `TrainerAircraft_6DOF_OOP_Stage2_VS_HS_Overlay.zip` directly into that root.
 3. Allow files such as `CMakeLists.txt`, `README.md`, and
    `docs/ARCHITECTURE.md` to be replaced.
 4. Delete the old CMake `build` directory if one exists; target names changed.
@@ -21,14 +21,14 @@ cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-The expected tests are `navion_core_tests` and `navion_stabilizer_tests`.
+The expected tests are `trainer_aircraft_core_tests` and `trainer_aircraft_stabilizer_tests`.
 
 ## Files added by the overlay
 
 ```text
-include/navion/components/ILocalFlowField.hpp
-include/navion/components/stabilizers/VATC_HorizontalStabilizer.hpp
-include/navion/components/stabilizers/VATC_VerticalStabilizer.hpp
+include/trainer_aircraft/components/ILocalFlowField.hpp
+include/trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp
+include/trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp
 src/components/stabilizers/VATC_HorizontalStabilizer.cpp
 src/components/stabilizers/VATC_VerticalStabilizer.cpp
 tests/test_stabilizers.cpp
@@ -59,26 +59,26 @@ It also replaces `CMakeLists.txt`, `README.md`, `docs/ARCHITECTURE.md`, and
 | `getConfig()` | retained as a const accessor |
 
 Configuration member names and array layout were retained so existing geometry
-and coefficient assignment code needs only the `navion::` namespace and the
+and coefficient assignment code needs only the `trainer_aircraft::` namespace and the
 new constructor/registration path. Clean aliases are available:
 
 ```cpp
-navion::HorizontalStabilizerConfig
-navion::HorizontalStabilizer
-navion::VerticalStabilizerConfig
-navion::VerticalStabilizer
+trainer_aircraft::HorizontalStabilizerConfig
+trainer_aircraft::HorizontalStabilizer
+trainer_aircraft::VerticalStabilizerConfig
+trainer_aircraft::VerticalStabilizer
 ```
 
 ## Registration
 
 ```cpp
-navion::NavionModel model(massProperties);
+trainer_aircraft::TrainerAircraftModel model(massProperties);
 
 model.addLoadComponent(
-    std::make_unique<navion::HorizontalStabilizer>(horizontalConfig)
+    std::make_unique<trainer_aircraft::HorizontalStabilizer>(horizontalConfig)
 );
 model.addLoadComponent(
-    std::make_unique<navion::VerticalStabilizer>(verticalConfig)
+    std::make_unique<trainer_aircraft::VerticalStabilizer>(verticalConfig)
 );
 ```
 
@@ -92,12 +92,12 @@ replacement uses one summed velocity increment from `ILocalFlowField` because
 all three terms entered the same local-velocity equation.
 
 ```cpp
-class TailFlow final : public navion::ILocalFlowField
+class TailFlow final : public trainer_aircraft::ILocalFlowField
 {
 public:
-    navion::Vec3 velocityIncrementBodyMps(
-        const navion::EvaluationContext& context,
-        const navion::Vec3& positionFromCgBodyM
+    trainer_aircraft::Vec3 velocityIncrementBodyMps(
+        const trainer_aircraft::EvaluationContext& context,
+        const trainer_aircraft::Vec3& positionFromCgBodyM
     ) const override
     {
         return calculateDownwash(context, positionFromCgBodyM)
@@ -108,7 +108,7 @@ public:
 
 auto tailFlow = std::make_shared<TailFlow>();
 auto horizontalTail =
-    std::make_unique<navion::HorizontalStabilizer>(horizontalConfig, tailFlow);
+    std::make_unique<trainer_aircraft::HorizontalStabilizer>(horizontalConfig, tailFlow);
 ```
 
 The provider is evaluated from every RK4 stage context. It must return a finite
@@ -124,7 +124,7 @@ moment already equals:
 M_CG_BODY = M_AC_BODY + r_CG_to_AC_BODY × F_BODY
 ```
 
-Do not add `M_AC` or `r × F` in `NavionModel`, `LoadAccumulator`, or
+Do not add `M_AC` or `r × F` in `TrainerAircraftModel`, `LoadAccumulator`, or
 `RigidBody6DOF`; doing so would double count the stabilizer moment.
 
 ## Intentional behavior change in the vertical tail

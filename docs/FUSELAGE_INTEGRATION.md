@@ -2,13 +2,13 @@
 
 ## Decision: retain the kernel, add an adapter
 
-The low-level `navion::fuselage::FuselageAerodynamics` kernel is stateless and
+The low-level `trainer_aircraft::fuselage::FuselageAerodynamics` kernel is stateless and
 encapsulates its geometry-derived values. It does not require the globally
 coupled treatment used by Landing Gear. Its output is deliberately scalar,
 however: drag magnitude plus pitch/yaw moments about the paper reference.
 
 Stage 5 therefore keeps the complete scalar kernel and adds
-`navion::fuselage::FuselageComponent`, an `ILoadComponent` adapter. This is a
+`trainer_aircraft::fuselage::FuselageComponent`, an `ILoadComponent` adapter. This is a
 component-boundary extension, not a central architecture change.
 
 ## Preserved kernel functionality
@@ -31,7 +31,7 @@ makeNicolosiReferenceFuselageGeometry();
 makeT6cReferenceFuselageGeometry();
 makeT6cReferenceFuselageTuning();
 makeT6cReferenceFuselageConfig();
-makeProvisionalNavionFuselageConfig();
+makeProvisionalTrainerAircraftFuselageConfig();
 ```
 
 ## Runtime and frame mapping
@@ -61,7 +61,7 @@ translation.
 The aerodynamic-reference position is configuration data. It defaults to
 zero because the uploaded source does not supply the offset from the
 paper-reference point (`x/Lf=0.50`, `z/df=0.50`) to the aircraft CG. A real
-Navion installation must set
+TrainerAircraft installation must set
 `aerodynamicReferencePositionFromCgBodyM` from its mass/geometry data.
 
 ## Exact V=0 boundary
@@ -77,13 +77,13 @@ takeoff-roll state without fabricating a drag coefficient.
 
 The `makeT6cReference...()` functions explicitly preserve T-6C source data
 for regression. The main scenario calls
-`makeProvisionalNavionFuselageConfig()`; its current values still inherit that
-proxy geometry/tuning and are not re-labelled as validated Navion data.
+`makeProvisionalTrainerAircraftFuselageConfig()`; its current values still inherit that
+proxy geometry/tuning and are not re-labelled as validated TrainerAircraft data.
 
 The integrated file pair is deliberately split:
 
 - `FuselageAerodynamics.*`: generic scalar equation kernel;
-- `FuselageComponent.*`: common OOP/`BodyLoad` adapter used by `NavionModel`.
+- `FuselageComponent.*`: common OOP/`BodyLoad` adapter used by `TrainerAircraftModel`.
 
 Both are compiled. The unchanged uploaded source snapshot remains under
 `docs/fuselage/original/`, while its YAML is under `reference_data/t6c/`.

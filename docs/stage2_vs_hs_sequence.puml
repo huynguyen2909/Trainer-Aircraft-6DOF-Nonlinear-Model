@@ -2,7 +2,7 @@
 title One RK4 Stage - Refactored VS_HS
 
 participant RK4Integrator as rk4
-participant NavionModel as model
+participant TrainerAircraftModel as model
 participant "HS / VS" as tail
 participant ILocalFlowField as flow
 participant LoadAccumulator as sum

@@ -1,6 +1,6 @@
-#include "navion/components/ILoadComponent.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/ILoadComponent.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -10,11 +10,11 @@
 namespace
 {
 
-class DemonstrationThrust final : public navion::ILoadComponent
+class DemonstrationThrust final : public trainer_aircraft::ILoadComponent
 {
 public:
-    navion::BodyLoad computeLoad(
-        const navion::EvaluationContext& context
+    trainer_aircraft::BodyLoad computeLoad(
+        const trainer_aircraft::EvaluationContext& context
     ) const override
     {
         return {
@@ -33,24 +33,24 @@ public:
 
 int main()
 {
-    const navion::MassProperties massProperties{
+    const trainer_aircraft::MassProperties massProperties{
         1000.0,
-        navion::Matrix3::diagonal(1200.0, 1500.0, 2000.0)
+        trainer_aircraft::Matrix3::diagonal(1200.0, 1500.0, 2000.0)
     };
 
-    navion::NavionModel navionModel(massProperties);
-    navionModel.addLoadComponent(
+    trainer_aircraft::TrainerAircraftModel TrainerAircraftModel(massProperties);
+    TrainerAircraftModel.addLoadComponent(
         std::make_unique<DemonstrationThrust>()
     );
 
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.throttle = 1.0;
 
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {}; // Isolate the example's +X acceleration.
 
-    navion::RigidBodyState state;
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RigidBodyState state;
+    trainer_aircraft::RK4Integrator integrator;
 
     constexpr double dtS = 0.01;
     constexpr int stepCount = 100;
@@ -62,11 +62,11 @@ int main()
             timeS,
             dtS,
             state,
-            [&navionModel, &controls, &environment](
+            [&TrainerAircraftModel, &controls, &environment](
                 double stageTimeS,
-                const navion::RigidBodyState& stageState
+                const trainer_aircraft::RigidBodyState& stageState
             ) {
-                return navionModel.evaluateDerivative(
+                return TrainerAircraftModel.evaluateDerivative(
                     stageTimeS,
                     stageState,
                     controls,

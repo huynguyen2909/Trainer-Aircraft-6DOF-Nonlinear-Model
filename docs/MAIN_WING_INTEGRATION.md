@@ -3,8 +3,8 @@
 ## Decision
 
 The uploaded `VATC_MainWing` already satisfies `ILoadComponent` and is
-stateless. It is therefore registered with `NavionModel::addLoadComponent()`;
-no change to `NavionModel`, `RigidBody6DOF`, `LoadAccumulator`, RK4 or the
+stateless. It is therefore registered with `TrainerAircraftModel::addLoadComponent()`;
+no change to `TrainerAircraftModel`, `RigidBody6DOF`, `LoadAccumulator`, RK4 or the
 Landing Gear two-phase/PGS path is needed.
 
 The source was placed under the common project paths and the convenience
@@ -71,4 +71,4 @@ magically identify new coefficients.
 `test_main_wing.cpp` checks the uploaded numerical default, V=0 behavior,
 aileron response, flap-domain enforcement and the single CG moment transfer.
 `test_full_aircraft.cpp` then evaluates MainWing through the shared
-`NavionModel` alongside all other components.
+`TrainerAircraftModel` alongside all other components.

@@ -1,10 +1,10 @@
-#include "navion/dynamics/RigidBody6DOF.hpp"
+#include "trainer_aircraft/dynamics/RigidBody6DOF.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
-namespace navion
+namespace trainer_aircraft
 {
 namespace
 {
@@ -136,4 +136,4 @@ void RigidBody6DOF::validateMassProperties(
     }
 }
 
-} // namespace navion
+} // namespace trainer_aircraft

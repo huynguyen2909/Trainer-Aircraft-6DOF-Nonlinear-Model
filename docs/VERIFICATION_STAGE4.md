@@ -17,7 +17,7 @@ Gear source, test and takeoff-roll executable for normal project builds.
 
 | Suite | Result |
 | --- | --- |
-| Stage 1 core math/load/rigid-body/NavionModel/RK4 | Pass |
+| Stage 1 core math/load/rigid-body/TrainerAircraftModel/RK4 | Pass |
 | Stage 2 Horizontal/Vertical Stabilizer | Pass |
 | Stage 3 Propeller kernel/component/integration (15 groups) | Pass |
 | Stage 4 Landing Gear/PGS/two-phase integration | Pass |
@@ -45,7 +45,7 @@ brakes=0,0 throughout sampled output
 ```
 
 This verifies code flow and numerical execution, not aircraft fidelity. Wing,
-Fuselage and validated Navion data are still required for a performance-grade
+Fuselage and validated TrainerAircraft data are still required for a performance-grade
 takeoff simulation.
 
 ## Recommended local verification
@@ -54,7 +54,7 @@ takeoff simulation.
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
-./build/navion_stage4_takeoff_roll
+./build/trainer_aircraft_stage4_takeoff_roll
 ```
 
 For contact stability, also repeat relevant cases with `dt`, `dt/2` and `dt/4`

@@ -1,10 +1,10 @@
-#include "navion/components/ILoadComponent.hpp"
-#include "navion/core/FlightTypes.hpp"
-#include "navion/core/MathTypes.hpp"
-#include "navion/dynamics/LoadAccumulator.hpp"
-#include "navion/dynamics/RigidBody6DOF.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/ILoadComponent.hpp"
+#include "trainer_aircraft/core/FlightTypes.hpp"
+#include "trainer_aircraft/core/MathTypes.hpp"
+#include "trainer_aircraft/dynamics/LoadAccumulator.hpp"
+#include "trainer_aircraft/dynamics/RigidBody6DOF.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -46,8 +46,8 @@ void requireNear(
 }
 
 void requireVecNear(
-    const navion::Vec3& actual,
-    const navion::Vec3& expected,
+    const trainer_aircraft::Vec3& actual,
+    const trainer_aircraft::Vec3& expected,
     double tolerance,
     const std::string& message
 )
@@ -72,24 +72,24 @@ void requireThrows(Function&& function, const std::string& message)
     require(threw, message);
 }
 
-navion::MassProperties simpleMassProperties(double massKg = 2.0)
+trainer_aircraft::MassProperties simpleMassProperties(double massKg = 2.0)
 {
     return {
         massKg,
-        navion::Matrix3::diagonal(2.0, 3.0, 4.0)
+        trainer_aircraft::Matrix3::diagonal(2.0, 3.0, 4.0)
     };
 }
 
-class ConstantLoadComponent final : public navion::ILoadComponent
+class ConstantLoadComponent final : public trainer_aircraft::ILoadComponent
 {
 public:
-    explicit ConstantLoadComponent(navion::BodyLoad load)
+    explicit ConstantLoadComponent(trainer_aircraft::BodyLoad load)
         : load_(load)
     {
     }
 
-    navion::BodyLoad computeLoad(
-        const navion::EvaluationContext& context
+    trainer_aircraft::BodyLoad computeLoad(
+        const trainer_aircraft::EvaluationContext& context
     ) const override
     {
         (void)context;
@@ -108,17 +108,17 @@ public:
     }
 
 private:
-    navion::BodyLoad load_{};
+    trainer_aircraft::BodyLoad load_{};
     mutable std::size_t callCount_{0U};
 };
 
 void testVectorAndMatrixMath()
 {
-    using navion::Matrix3;
-    using navion::Vec3;
+    using trainer_aircraft::Matrix3;
+    using trainer_aircraft::Vec3;
 
     requireVecNear(
-        navion::cross({1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}),
+        trainer_aircraft::cross({1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}),
         {0.0, 0.0, 1.0},
         1.0e-14,
         "Right-handed cross product"
@@ -137,7 +137,7 @@ void testVectorAndMatrixMath()
 void testQuaternionConvention()
 {
     const double halfYaw = 0.25 * PI;
-    const navion::Quaternion yaw90{
+    const trainer_aircraft::Quaternion yaw90{
         std::cos(halfYaw),
         0.0,
         0.0,
@@ -154,7 +154,7 @@ void testQuaternionConvention()
 
 void testLoadAccumulator()
 {
-    navion::LoadAccumulator accumulator;
+    trainer_aircraft::LoadAccumulator accumulator;
     accumulator.add({{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}});
     accumulator.add({{-2.0, 1.0, 0.5}, {2.0, -5.0, 4.0}});
 
@@ -191,7 +191,7 @@ void testLoadAccumulator()
         "Accumulator must reject non-finite loads."
     );
 
-    const navion::BodyLoad pointLoad = navion::makeBodyLoadAtPoint(
+    const trainer_aircraft::BodyLoad pointLoad = trainer_aircraft::makeBodyLoadAtPoint(
         {0.0, 10.0, 0.0},
         {0.0, 0.0, 2.0},
         {-3.0, 0.0, 0.0}
@@ -206,13 +206,13 @@ void testLoadAccumulator()
 
 void testRigidBodyTranslationAndGravity()
 {
-    const navion::RigidBody6DOF rigidBody(simpleMassProperties());
+    const trainer_aircraft::RigidBody6DOF rigidBody(simpleMassProperties());
 
-    navion::RigidBodyState state;
-    navion::Environment environment;
-    const navion::BodyLoad load{{4.0, 0.0, 0.0}, {}};
+    trainer_aircraft::RigidBodyState state;
+    trainer_aircraft::Environment environment;
+    const trainer_aircraft::BodyLoad load{{4.0, 0.0, 0.0}, {}};
 
-    const navion::StateDerivative derivative =
+    const trainer_aircraft::StateDerivative derivative =
         rigidBody.evaluate(state, load, environment.gravityNedMps2);
 
     requireVecNear(
@@ -225,15 +225,15 @@ void testRigidBodyTranslationAndGravity()
 
 void testRigidBodyRotatingFrameTerm()
 {
-    const navion::RigidBody6DOF rigidBody(simpleMassProperties());
-    navion::RigidBodyState state;
+    const trainer_aircraft::RigidBody6DOF rigidBody(simpleMassProperties());
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {10.0, 0.0, 0.0};
     state.angularRateBodyRadps = {0.0, 0.0, 1.0};
 
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {};
 
-    const navion::StateDerivative derivative =
+    const trainer_aircraft::StateDerivative derivative =
         rigidBody.evaluate(state, {}, environment.gravityNedMps2);
 
     requireVecNear(
@@ -246,14 +246,14 @@ void testRigidBodyRotatingFrameTerm()
 
 void testEulerAngularCoupling()
 {
-    const navion::RigidBody6DOF rigidBody(simpleMassProperties());
-    navion::RigidBodyState state;
+    const trainer_aircraft::RigidBody6DOF rigidBody(simpleMassProperties());
+    trainer_aircraft::RigidBodyState state;
     state.angularRateBodyRadps = {1.0, 2.0, 3.0};
 
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {};
 
-    const navion::StateDerivative derivative =
+    const trainer_aircraft::StateDerivative derivative =
         rigidBody.evaluate(state, {}, environment.gravityNedMps2);
 
     requireVecNear(
@@ -264,25 +264,25 @@ void testEulerAngularCoupling()
     );
 }
 
-void testFlightConditionAndNavionModel()
+void testFlightConditionAndTrainerAircraftModel()
 {
-    navion::NavionModel model(simpleMassProperties());
+    trainer_aircraft::TrainerAircraftModel model(simpleMassProperties());
 
     auto component = std::make_unique<ConstantLoadComponent>(
-        navion::BodyLoad{{4.0, 0.0, 0.0}, {}}
+        trainer_aircraft::BodyLoad{{4.0, 0.0, 0.0}, {}}
     );
     ConstantLoadComponent* componentObserver = component.get();
     model.addLoadComponent(std::move(component));
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {10.0, 0.0, 0.0};
 
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.windVelocityNedMps = {2.0, 0.0, 0.0};
     environment.gravityNedMps2 = {};
     environment.speedOfSoundMps = 320.0;
 
-    const navion::ModelEvaluation evaluation =
+    const trainer_aircraft::ModelEvaluation evaluation =
         model.evaluate(0.0, state, {}, environment);
 
     requireVecNear(
@@ -307,7 +307,7 @@ void testFlightConditionAndNavionModel()
         evaluation.stateDerivative.velocityRateBodyMps2,
         {2.0, 0.0, 0.0},
         1.0e-12,
-        "NavionModel component force to rigid body"
+        "TrainerAircraftModel component force to rigid body"
     );
     require(evaluation.contributingComponentCount == 1U, "Component count");
     require(componentObserver->callCount() == 1U, "Component evaluation count");
@@ -315,19 +315,19 @@ void testFlightConditionAndNavionModel()
 
 void testRk4CallsEveryStageAndIntegratesConstantForce()
 {
-    navion::NavionModel model(simpleMassProperties());
+    trainer_aircraft::TrainerAircraftModel model(simpleMassProperties());
     auto component = std::make_unique<ConstantLoadComponent>(
-        navion::BodyLoad{{4.0, 0.0, 0.0}, {}}
+        trainer_aircraft::BodyLoad{{4.0, 0.0, 0.0}, {}}
     );
     ConstantLoadComponent* componentObserver = component.get();
     model.addLoadComponent(std::move(component));
 
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {};
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
 
-    navion::RigidBodyState state;
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RigidBodyState state;
+    trainer_aircraft::RK4Integrator integrator;
 
     constexpr double dt = 0.01;
     constexpr std::size_t stepCount = 100U;
@@ -341,7 +341,7 @@ void testRk4CallsEveryStageAndIntegratesConstantForce()
             state,
             [&model, &controls, &environment](
                 double stageTime,
-                const navion::RigidBodyState& stageState
+                const trainer_aircraft::RigidBodyState& stageState
             ) {
                 return model.evaluateDerivative(
                     stageTime,
@@ -370,10 +370,10 @@ void testRk4CallsEveryStageAndIntegratesConstantForce()
 
 void testRk4QuaternionKinematics()
 {
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.angularRateBodyRadps = {0.0, 0.0, 0.5 * PI};
 
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RK4Integrator integrator;
     constexpr double dt = 0.01;
     constexpr std::size_t stepCount = 100U;
     double time = 0.0;
@@ -384,10 +384,10 @@ void testRk4QuaternionKinematics()
             time,
             dt,
             state,
-            [](double, const navion::RigidBodyState& stageState) {
-                navion::StateDerivative derivative;
+            [](double, const trainer_aircraft::RigidBodyState& stageState) {
+                trainer_aircraft::StateDerivative derivative;
                 derivative.attitudeRate =
-                    navion::quaternionDerivativeBodyToNed(
+                    trainer_aircraft::quaternionDerivativeBodyToNed(
                         stageState.attitudeBodyToNed,
                         stageState.angularRateBodyRadps
                     );
@@ -409,9 +409,9 @@ void testMassPropertyValidation()
 {
     requireThrows(
         []() {
-            const navion::RigidBody6DOF invalid({
+            const trainer_aircraft::RigidBody6DOF invalid({
                 -1.0,
-                navion::Matrix3::identity()
+                trainer_aircraft::Matrix3::identity()
             });
             (void)invalid;
         },
@@ -420,9 +420,9 @@ void testMassPropertyValidation()
 
     requireThrows(
         []() {
-            const navion::RigidBody6DOF invalid({
+            const trainer_aircraft::RigidBody6DOF invalid({
                 1.0,
-                navion::Matrix3::diagonal(1.0, -1.0, 1.0)
+                trainer_aircraft::Matrix3::diagonal(1.0, -1.0, 1.0)
             });
             (void)invalid;
         },
@@ -442,7 +442,7 @@ int main()
         testRigidBodyTranslationAndGravity();
         testRigidBodyRotatingFrameTerm();
         testEulerAngularCoupling();
-        testFlightConditionAndNavionModel();
+        testFlightConditionAndTrainerAircraftModel();
         testRk4CallsEveryStageAndIntegratesConstantForce();
         testRk4QuaternionKinematics();
         testMassPropertyValidation();
@@ -453,6 +453,6 @@ int main()
         return 1;
     }
 
-    std::cout << "All Navion Stage 1 tests passed.\n";
+    std::cout << "All TrainerAircraft Stage 1 tests passed.\n";
     return 0;
 }

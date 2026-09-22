@@ -1,5 +1,5 @@
 @startuml
-title Navion Stage 3 - VS_HS and Propeller
+title TrainerAircraft Stage 3 - VS_HS and Propeller
 
 interface ILoadComponent {
   + computeLoad(context) : BodyLoad
@@ -32,7 +32,7 @@ class PropellerModel {
   + evaluateDiskAtInflow(...)
 }
 
-class NavionModel {
+class TrainerAircraftModel {
   - rigidBody : RigidBody6DOF
   - components : vector<unique_ptr<ILoadComponent>>
   + evaluate(...)
@@ -47,8 +47,8 @@ ILoadComponent <|.. HorizontalStabilizer
 ILoadComponent <|.. VerticalStabilizer
 ILoadComponent <|.. PropellerComponent
 PropellerComponent *-- PropellerModel
-NavionModel o-- ILoadComponent
-NavionModel ..> LoadAccumulator
-NavionModel *-- RigidBody6DOF
-RK4Integrator ..> NavionModel : derivative callback
+TrainerAircraftModel o-- ILoadComponent
+TrainerAircraftModel ..> LoadAccumulator
+TrainerAircraftModel *-- RigidBody6DOF
+RK4Integrator ..> TrainerAircraftModel : derivative callback
 @enduml

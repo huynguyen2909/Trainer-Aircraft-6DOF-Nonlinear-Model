@@ -1,5 +1,5 @@
-#include "navion/config/ProvisionalNavionConfig.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/config/ProvisionalTrainerAircraftConfig.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -18,28 +18,28 @@ void require(bool condition, const std::string& message)
 
 void testAllComponentsEvaluateThroughCommonArchitecture()
 {
-    navion::ProvisionalNavionConfig aircraft =
-        navion::makeProvisionalNavionConfig();
+    trainer_aircraft::ProvisionalTrainerAircraftConfig aircraft =
+        trainer_aircraft::makeProvisionalTrainerAircraftConfig();
     aircraft.propeller.radialElementCount = 8U;
     aircraft.propeller.azimuthStationCount = 12U;
 
-    navion::NavionModel model(aircraft.massProperties);
-    navion::addProvisionalNavionComponents(model, aircraft);
+    trainer_aircraft::TrainerAircraftModel model(aircraft.massProperties);
+    trainer_aircraft::addProvisionalTrainerAircraftComponents(model, aircraft);
 
     require(model.componentCount() == 6U,
             "HS, VS, MainWing, Fuselage, Propeller and LandingGear registered");
     require(model.hasGroundContactComponent(),
             "LandingGear remains on the coupled ground-contact path");
 
-    navion::Environment environment;
-    navion::ControlInputs controls;
+    trainer_aircraft::Environment environment;
+    trainer_aircraft::ControlInputs controls;
     controls.throttle = 1.0;
     controls.propellerEnabled = true;
     controls.landingGearExtended = true;
     controls.brakeLeft = 0.0;
     controls.brakeRight = 0.0;
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.positionNedM.z = -100.0;
 
     const auto zeroSpeed = model.evaluate(
@@ -54,7 +54,7 @@ void testAllComponentsEvaluateThroughCommonArchitecture()
     require(zeroSpeed.componentLoads.size() == 6U,
             "Evaluation reports one diagnostic load per registered component");
 
-    navion::BodyLoad reconstructedTotal;
+    trainer_aircraft::BodyLoad reconstructedTotal;
     for (const auto& component : zeroSpeed.componentLoads)
     {
         require(!component.name.empty(),
@@ -79,7 +79,7 @@ void testAllComponentsEvaluateThroughCommonArchitecture()
         1.0, 0.01, state, controls, environment
     );
     require(moving.flightCondition.airspeedMps > 40.0,
-            "NavionModel supplies live flight condition to every component");
+            "TrainerAircraftModel supplies live flight condition to every component");
     require(moving.totalComponentLoad.isFinite(),
             "Full Stage 5 moving load is finite");
     require(moving.stateDerivative.isFinite(),

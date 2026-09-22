@@ -1,4 +1,4 @@
-#include "navion/components/wings/VATC_MainWing.hpp"
+#include "trainer_aircraft/components/wings/VATC_MainWing.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace navion
+namespace trainer_aircraft
 {
 namespace
 {
@@ -277,7 +277,7 @@ void validateContext(const EvaluationContext& context)
 struct VATC_MainWing::WorkingData
 {
     // ---------------------------------------------------------------------
-    // Default runtime condition copied from navion_model_direct_plots(5).cpp
+    // Default runtime condition copied from trainer_aircraft_model_direct_plots(5).cpp
     // rho = 1.0556 kg/m^3, V = 43.9 m/s,
     // alpha = beta = p = q = r = delta_a = 0,
     // delta_f = 20 deg.
@@ -295,7 +295,7 @@ struct VATC_MainWing::WorkingData
     double flapDeflectionRad{0.3490658503988659};  // 20 deg
     double flapDeflectionDeg{20.0};
 
-    // Geometry-derived values for the old default Navion input set.
+    // Geometry-derived values for the old default TrainerAircraft input set.
     // b = sqrt(S*AR)
     // sweep_c/4 = atan(tan(sweep_LE) - (1-lambda)/(AR*(1+lambda)))
     // S_wf from the original trapezoidal-wing expression
@@ -1134,4 +1134,4 @@ void VATC_MainWing::calculateDimensionalLoads(
     };
 }
 
-} // namespace navion
+} // namespace trainer_aircraft

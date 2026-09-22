@@ -1,4 +1,4 @@
-#include "navion/components/landing_gear/LandingGearComponent.hpp"
+#include "trainer_aircraft/components/landing_gear/LandingGearComponent.hpp"
 
 #include <algorithm>
 #include <array>
@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <utility>
 
-namespace navion::landing_gear
+namespace trainer_aircraft::landing_gear
 {
 namespace
 {
@@ -677,4 +677,4 @@ MassProperties makeT6cReferenceMassProperties()
     };
 }
 
-} // namespace navion::landing_gear
+} // namespace trainer_aircraft::landing_gear

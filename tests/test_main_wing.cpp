@@ -1,4 +1,4 @@
-#include "navion/components/wings/VATC_MainWing.hpp"
+#include "trainer_aircraft/components/wings/VATC_MainWing.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -35,8 +35,8 @@ void requireNear(
 }
 
 void requireVecNear(
-    const navion::Vec3& actual,
-    const navion::Vec3& expected,
+    const trainer_aircraft::Vec3& actual,
+    const trainer_aircraft::Vec3& expected,
     double tolerance,
     const std::string& message
 )
@@ -48,16 +48,16 @@ void requireVecNear(
 
 struct Fixture
 {
-    navion::RigidBodyState state{};
-    navion::ControlInputs controls{};
-    navion::Environment environment{};
-    navion::FlightCondition flight{};
-    navion::MassProperties mass{
+    trainer_aircraft::RigidBodyState state{};
+    trainer_aircraft::ControlInputs controls{};
+    trainer_aircraft::Environment environment{};
+    trainer_aircraft::FlightCondition flight{};
+    trainer_aircraft::MassProperties mass{
         1000.0,
-        navion::Matrix3::diagonal(1000.0, 1500.0, 1800.0)
+        trainer_aircraft::Matrix3::diagonal(1000.0, 1500.0, 1800.0)
     };
 
-    navion::EvaluationContext context() const
+    trainer_aircraft::EvaluationContext context() const
     {
         return {0.0, state, controls, environment, flight, mass};
     }
@@ -65,7 +65,7 @@ struct Fixture
 
 void testUploadedDefaultRegression()
 {
-    navion::MainWing wing(navion::MainWingConfig{});
+    trainer_aircraft::MainWing wing(trainer_aircraft::MainWingConfig{});
     Fixture fixture;
     fixture.environment.airDensityKgM3 = 1.0556;
     fixture.flight.airspeedMps = 43.9;
@@ -97,7 +97,7 @@ void testUploadedDefaultRegression()
 
 void testZeroSpeedAndControlPaths()
 {
-    navion::MainWing wing(navion::MainWingConfig{});
+    trainer_aircraft::MainWing wing(trainer_aircraft::MainWingConfig{});
     Fixture fixture;
     fixture.controls.flapRad = 0.0;
 
@@ -132,10 +132,10 @@ void testZeroSpeedAndControlPaths()
 
 void testMomentTransferToCg()
 {
-    navion::MainWingConfig config;
+    trainer_aircraft::MainWingConfig config;
     config.reference.output_h = 0.50;
     config.reference.output_z_m = -0.20;
-    navion::MainWing wing(config);
+    trainer_aircraft::MainWing wing(config);
 
     Fixture fixture;
     fixture.flight.airspeedMps = 45.0;
@@ -148,14 +148,14 @@ void testMomentTransferToCg()
     fixture.controls.flapRad = 15.0 * PI / 180.0;
 
     const auto result = wing.evaluateDetailed(fixture.context());
-    const navion::Vec3 referenceFromCg{
+    const trainer_aircraft::Vec3 referenceFromCg{
         result.momentTransferDxM,
         0.0,
         result.momentTransferDzM
     };
-    const navion::Vec3 expectedMoment =
+    const trainer_aircraft::Vec3 expectedMoment =
         result.intrinsicMomentAtAerodynamicReferenceBodyNm +
-        navion::cross(referenceFromCg, result.forceBodyN);
+        trainer_aircraft::cross(referenceFromCg, result.forceBodyN);
     requireVecNear(result.bodyLoad.momentAboutCgBodyNm, expectedMoment, 1.0e-8,
                    "MainWing transfers r cross F exactly once");
 }

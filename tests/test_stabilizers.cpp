@@ -1,8 +1,8 @@
-#include "navion/components/ILocalFlowField.hpp"
-#include "navion/components/stabilizers/VATC_HorizontalStabilizer.hpp"
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/ILocalFlowField.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -39,8 +39,8 @@ void requireNear(
 }
 
 void requireVecNear(
-    const navion::Vec3& actual,
-    const navion::Vec3& expected,
+    const trainer_aircraft::Vec3& actual,
+    const trainer_aircraft::Vec3& expected,
     double tolerance,
     const std::string& message
 )
@@ -50,9 +50,9 @@ void requireVecNear(
     requireNear(actual.z, expected.z, tolerance, message + " [z]");
 }
 
-navion::HorizontalStabilizerConfig horizontalConfig()
+trainer_aircraft::HorizontalStabilizerConfig horizontalConfig()
 {
-    navion::HorizontalStabilizerConfig config;
+    trainer_aircraft::HorizontalStabilizerConfig config;
     config.Area = 2.0;
     config.TailSpan = 4.0;
     config.TailMAC = 1.0;
@@ -65,9 +65,9 @@ navion::HorizontalStabilizerConfig horizontalConfig()
     return config;
 }
 
-navion::VerticalStabilizerConfig verticalConfig()
+trainer_aircraft::VerticalStabilizerConfig verticalConfig()
 {
-    navion::VerticalStabilizerConfig config;
+    trainer_aircraft::VerticalStabilizerConfig config;
     config.Area = 2.0;
     config.RudderArea = 0.5;
     config.TailSpan = 2.0;
@@ -83,16 +83,16 @@ navion::VerticalStabilizerConfig verticalConfig()
 
 struct ContextFixture
 {
-    navion::RigidBodyState state{};
-    navion::ControlInputs controls{};
-    navion::Environment environment{};
-    navion::FlightCondition flightCondition{};
-    navion::MassProperties massProperties{
+    trainer_aircraft::RigidBodyState state{};
+    trainer_aircraft::ControlInputs controls{};
+    trainer_aircraft::Environment environment{};
+    trainer_aircraft::FlightCondition flightCondition{};
+    trainer_aircraft::MassProperties massProperties{
         1000.0,
-        navion::Matrix3::diagonal(1000.0, 1200.0, 1500.0)
+        trainer_aircraft::Matrix3::diagonal(1000.0, 1200.0, 1500.0)
     };
 
-    navion::EvaluationContext context() const
+    trainer_aircraft::EvaluationContext context() const
     {
         return {
             0.0,
@@ -104,7 +104,7 @@ struct ContextFixture
         };
     }
 
-    void setAirRelativeVelocity(const navion::Vec3& velocityBodyMps)
+    void setAirRelativeVelocity(const trainer_aircraft::Vec3& velocityBodyMps)
     {
         flightCondition.airRelativeVelocityBodyMps = velocityBodyMps;
         flightCondition.airspeedMps = velocityBodyMps.norm();
@@ -125,17 +125,17 @@ struct ContextFixture
     }
 };
 
-class CountingLocalFlowField final : public navion::ILocalFlowField
+class CountingLocalFlowField final : public trainer_aircraft::ILocalFlowField
 {
 public:
-    explicit CountingLocalFlowField(navion::Vec3 incrementBodyMps)
+    explicit CountingLocalFlowField(trainer_aircraft::Vec3 incrementBodyMps)
         : incrementBodyMps_(incrementBodyMps)
     {
     }
 
-    navion::Vec3 velocityIncrementBodyMps(
-        const navion::EvaluationContext& context,
-        const navion::Vec3& positionFromCgBodyM
+    trainer_aircraft::Vec3 velocityIncrementBodyMps(
+        const trainer_aircraft::EvaluationContext& context,
+        const trainer_aircraft::Vec3& positionFromCgBodyM
     ) const override
     {
         (void)context;
@@ -150,18 +150,18 @@ public:
     }
 
 private:
-    navion::Vec3 incrementBodyMps_{};
+    trainer_aircraft::Vec3 incrementBodyMps_{};
     mutable std::size_t callCount_{0U};
 };
 
 void testHorizontalLoadAndMomentContract()
 {
-    navion::HorizontalStabilizer stabilizer(horizontalConfig());
+    trainer_aircraft::HorizontalStabilizer stabilizer(horizontalConfig());
     ContextFixture fixture;
     fixture.setAirRelativeVelocity({10.0, 0.0, 0.0});
     fixture.controls.elevatorRad = 0.1;
 
-    const navion::HorizontalStabilizerEvaluation result =
+    const trainer_aircraft::HorizontalStabilizerEvaluation result =
         stabilizer.evaluateDetailed(fixture.context());
 
     constexpr double expectedDynamicPressurePa = 61.25;
@@ -201,7 +201,7 @@ void testHorizontalAngularRateAndIntrinsicMoment()
     auto config = horizontalConfig();
     config.LiftCurveSlope = 0.0;
     config.PitchMomentCoefficient = 0.5;
-    navion::HorizontalStabilizer stabilizer(config);
+    trainer_aircraft::HorizontalStabilizer stabilizer(config);
 
     ContextFixture fixture;
     fixture.setAirRelativeVelocity({10.0, 0.0, 0.0});
@@ -228,7 +228,7 @@ void testHorizontalAngularRateAndIntrinsicMoment()
 
 void testVerticalRestoringSigns()
 {
-    navion::VerticalStabilizer stabilizer(verticalConfig());
+    trainer_aircraft::VerticalStabilizer stabilizer(verticalConfig());
     ContextFixture fixture;
     fixture.setAirRelativeVelocity({10.0, 1.0, 0.0});
 
@@ -260,7 +260,7 @@ void testVerticalDragUsesFullLocalVelocity()
     auto config = verticalConfig();
     config.SideForceCurveSlope = 0.0;
     config.ZeroLiftDragCoefficient = 0.1;
-    navion::VerticalStabilizer stabilizer(config);
+    trainer_aircraft::VerticalStabilizer stabilizer(config);
 
     ContextFixture fixture;
     fixture.setAirRelativeVelocity({10.0, 0.0, 2.0});
@@ -276,39 +276,39 @@ void testVerticalDragUsesFullLocalVelocity()
 void testLocalFlowFieldAndRk4StageEvaluation()
 {
     auto flowField =
-        std::make_shared<CountingLocalFlowField>(navion::Vec3{0.0, 0.0, 0.5});
+        std::make_shared<CountingLocalFlowField>(trainer_aircraft::Vec3{0.0, 0.0, 0.5});
 
-    navion::NavionModel model({
+    trainer_aircraft::TrainerAircraftModel model({
         1000.0,
-        navion::Matrix3::diagonal(1000.0, 1200.0, 1500.0)
+        trainer_aircraft::Matrix3::diagonal(1000.0, 1200.0, 1500.0)
     });
     model.addLoadComponent(
-        std::make_unique<navion::HorizontalStabilizer>(
+        std::make_unique<trainer_aircraft::HorizontalStabilizer>(
             horizontalConfig(),
             flowField
         )
     );
     model.addLoadComponent(
-        std::make_unique<navion::VerticalStabilizer>(
+        std::make_unique<trainer_aircraft::VerticalStabilizer>(
             verticalConfig(),
             flowField
         )
     );
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {10.0, 0.0, 0.0};
-    navion::ControlInputs controls;
-    navion::Environment environment;
+    trainer_aircraft::ControlInputs controls;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {};
 
-    navion::RK4Integrator integrator;
+    trainer_aircraft::RK4Integrator integrator;
     state = integrator.step(
         0.0,
         0.01,
         state,
         [&model, &controls, &environment](
             double stageTimeS,
-            const navion::RigidBodyState& stageState
+            const trainer_aircraft::RigidBodyState& stageState
         ) {
             return model.evaluateDerivative(
                 stageTimeS,
@@ -325,11 +325,11 @@ void testLocalFlowFieldAndRk4StageEvaluation()
         "Two stabilizers must recompute local flow at all four RK4 stages."
     );
 
-    const navion::ModelEvaluation evaluation =
+    const trainer_aircraft::ModelEvaluation evaluation =
         model.evaluate(0.01, state, controls, environment);
     require(
         evaluation.contributingComponentCount == 2U,
-        "NavionModel must accumulate one load from each stabilizer."
+        "TrainerAircraftModel must accumulate one load from each stabilizer."
     );
     require(evaluation.totalComponentLoad.isFinite(), "Total load must be finite.");
 }
@@ -340,7 +340,7 @@ void testAutomaticAspectRatioAndLimitOrdering()
     horizontal.TailAR = 0.0;
     horizontal.ElevatorMechanicalLimit[0] = 0.2;
     horizontal.ElevatorMechanicalLimit[1] = -0.2;
-    const navion::HorizontalStabilizer horizontalModel(horizontal);
+    const trainer_aircraft::HorizontalStabilizer horizontalModel(horizontal);
     requireNear(
         horizontalModel.getConfig().TailAR,
         8.0,
@@ -356,7 +356,7 @@ void testAutomaticAspectRatioAndLimitOrdering()
     vertical.TailAR = 0.0;
     vertical.RudderMechanicalLimit[0] = 0.2;
     vertical.RudderMechanicalLimit[1] = -0.2;
-    const navion::VerticalStabilizer verticalModel(vertical);
+    const trainer_aircraft::VerticalStabilizer verticalModel(vertical);
     requireNear(
         verticalModel.getConfig().TailAR,
         2.0,
@@ -388,6 +388,6 @@ int main()
         return 1;
     }
 
-    std::cout << "All Navion Stage 2 stabilizer tests passed.\n";
+    std::cout << "All TrainerAircraft Stage 2 stabilizer tests passed.\n";
     return 0;
 }

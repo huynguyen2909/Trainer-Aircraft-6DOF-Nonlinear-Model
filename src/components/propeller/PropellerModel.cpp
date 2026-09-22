@@ -1,4 +1,4 @@
-#include "navion/components/propeller/PropellerModel.hpp"
+#include "trainer_aircraft/components/propeller/PropellerModel.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace navion::propeller
+namespace trainer_aircraft::propeller
 {
 namespace
 {
@@ -858,13 +858,13 @@ RuntimeInput PropellerComponent::makeRuntimeInput(
     return input;
 }
 
-PropellerParameters makeEstimatedNavionNaca5868_9Parameters() {
+PropellerParameters makeEstimatedTrainerAircraftNaca5868_9Parameters() {
     PropellerParameters parameters{};
     parameters.propellerName =
-        "Estimated NACA 5868-9-like Navion V1 propeller";
+        "Estimated NACA 5868-9-like TrainerAircraft V1 propeller";
     parameters.airfoilName = "Estimated Clark-Y alpha-only polar";
     parameters.bladeCount = 2;
-    parameters.radiusM = 1.0668; // 84 in diameter; provisional Navion variant
+    parameters.radiusM = 1.0668; // 84 in diameter; provisional TrainerAircraft variant
     parameters.rootCutoutFraction = 0.20;
     parameters.rotationRateRadps =
         2300.0 * 2.0 * pi / 60.0; // provisional configured design RPM
@@ -945,4 +945,4 @@ PropellerParameters makeEstimatedNavionNaca5868_9Parameters() {
     return parameters;
 }
 
-} // namespace navion::propeller
+} // namespace trainer_aircraft::propeller

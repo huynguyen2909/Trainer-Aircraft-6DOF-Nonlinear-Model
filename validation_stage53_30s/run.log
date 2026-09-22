@@ -33,4 +33,4 @@
 # persistent_airborne_candidate=not_detected
 # csv=validation_stage53_30s/takeoff_roll.csv
 # NOTE: z-Down decreasing indicates upward CG motion, but liftoff also requires persistent loss of all ground contacts.
-# NOTE: component parameters remain provisional proxies; this is not a validated Navion takeoff-performance result.
+# NOTE: component parameters remain provisional proxies; this is not a validated TrainerAircraft takeoff-performance result.

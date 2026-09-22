@@ -4,7 +4,7 @@
 
 The uploaded module was converted from Eigen and its standalone aircraft
 types to the Stage 3 shared math/data types. The contact, tyre and PGS
-algorithms are retained. `NavionModel` was extended because PGS needs the
+algorithms are retained. `TrainerAircraftModel` was extended because PGS needs the
 whole-aircraft preliminary load and therefore cannot be called correctly from
 an independent one-pass `computeLoad()`.
 
@@ -12,7 +12,7 @@ an independent one-pass `computeLoad()`.
 
 | Uploaded Landing Gear API/data | Stage 4 API/data | Treatment |
 | --- | --- | --- |
-| `Vec3`, `Mat3` (Eigen) | `navion::Vec3`, `navion::Matrix3` | Mechanical type migration |
+| `Vec3`, `Mat3` (Eigen) | `trainer_aircraft::Vec3`, `trainer_aircraft::Matrix3` | Mechanical type migration |
 | `GearParams` | `landing_gear::GearParameters` | Field names normalized; equations unchanged |
 | `Params` | `LandingGearParameters` + common `MassProperties` | Aircraft mass/inertia now have one owner |
 | `State` | `EvaluationContext::state` | Euler attitude replaced by common quaternion |
@@ -88,7 +88,7 @@ controls.noseWheelSteeringRad =
     std::clamp(commandNorm, -1.0, 1.0) * noseMaximumSteeringRad;
 ```
 
-## Two-phase `NavionModel` orchestration
+## Two-phase `TrainerAircraftModel` orchestration
 
 Registration is intentionally separate from ordinary components:
 
@@ -164,7 +164,7 @@ The unchanged Stage 1–3 tests remain in the same CTest suite.
 - Wheel spin dynamics and anti-skid are absent from the uploaded model.
 - Longitudinal and lateral bounds are independent rather than combined.
 - Touchdown/contact switching is nonsmooth and may require a smaller `dt`.
-- The provided numeric factory is T-6C reference data, not validated Navion
+- The provided numeric factory is T-6C reference data, not validated TrainerAircraft
   landing-gear data.
 
 These limitations are documented inherited scope; Stage 4 does not silently

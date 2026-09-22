@@ -1,5 +1,5 @@
 @startuml
-title Navion Stage 1 - OOP Class Structure
+title TrainerAircraft Stage 1 - OOP Class Structure
 
 interface ILoadComponent {
   + computeLoad(context) : BodyLoad
@@ -16,7 +16,7 @@ ILoadComponent <|.. FutureVerticalTail
 ILoadComponent <|.. FuturePropeller
 ILoadComponent <|.. FutureLandingGear
 
-class NavionModel {
+class TrainerAircraftModel {
   - rigidBody : RigidBody6DOF
   - loadComponents : vector<unique_ptr<ILoadComponent>>
   + evaluateDerivative(...) : StateDerivative
@@ -38,9 +38,9 @@ class RK4Integrator {
   + step(t, dt, state, derivativeFunction) : RigidBodyState
 }
 
-NavionModel o-- ILoadComponent
-NavionModel *-- RigidBody6DOF
-NavionModel ..> LoadAccumulator
-RK4Integrator ..> NavionModel : derivative callback
+TrainerAircraftModel o-- ILoadComponent
+TrainerAircraftModel *-- RigidBody6DOF
+TrainerAircraftModel ..> LoadAccumulator
+RK4Integrator ..> TrainerAircraftModel : derivative callback
 @enduml
 

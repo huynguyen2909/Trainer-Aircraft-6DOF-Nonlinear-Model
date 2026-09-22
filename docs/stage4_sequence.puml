@@ -2,7 +2,7 @@
 title One RK4 Outer Step - Stage 4 PGS and Accepted History
 
 participant RK4Integrator as rk4
-participant NavionModel as model
+participant TrainerAircraftModel as model
 participant "VS / HS / Propeller" as regular
 participant LandingGearComponent as gear
 participant PGSFrictionSolver as pgs

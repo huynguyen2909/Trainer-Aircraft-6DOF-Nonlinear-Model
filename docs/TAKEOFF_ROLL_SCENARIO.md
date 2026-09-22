@@ -10,7 +10,7 @@ ordinary component loads -> Landing Gear normal load -> global PGS friction
 ```
 
 It logs every phase on one time axis. It is an architecture and numerical
-integration scenario, not a validated Navion takeoff-performance case.
+integration scenario, not a validated TrainerAircraft takeoff-performance case.
 
 ## Timeline and controls
 
@@ -40,7 +40,7 @@ value used in earlier stages.
 
 ## Component-load reporting
 
-`NavionModel::evaluateCoupled()` evaluates each ordinary component exactly
+`TrainerAircraftModel::evaluateCoupled()` evaluates each ordinary component exactly
 once, adds its `BodyLoad` to `LoadAccumulator` and stores a diagnostic copy in
 `ModelEvaluation::componentLoads`. After the two-phase Landing Gear solve, its
 normal-plus-PGS-friction load is stored in the same report vector.
@@ -64,7 +64,7 @@ For each outer time step:
 2. each derivative recomputes ordinary loads, contacts, normal loads and PGS;
 3. all four calls receive the same positive outer `dt`;
 4. RK4 returns the accepted end state;
-5. `NavionModel::commitAcceptedStep()` advances gear/slip/warm-start history
+5. `TrainerAircraftModel::commitAcceptedStep()` advances gear/slip/warm-start history
    once.
 
 Releasing the brakes does not disable PGS. Rolling and lateral rows remain
@@ -104,4 +104,4 @@ airborne candidate       = false
 
 The decreasing normal reaction and small upward CG displacement show wing
 unloading of the gear, not liftoff. Rotation is not commanded, and this result
-must not be treated as a real Navion takeoff limit.
+must not be treated as a real TrainerAircraft takeoff limit.

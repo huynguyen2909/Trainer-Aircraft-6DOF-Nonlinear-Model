@@ -1,4 +1,4 @@
-# Navion nonlinear 6-DOF OOP — Stage 5.3 RPM ramp and 30-second run
+# TrainerAircraft nonlinear 6-DOF OOP — Stage 5.3 RPM ramp and 30-second run
 
 Stage 5.3 extends the Stage 5.2 ground-static-trim model with a prescribed,
 stage-wise propeller-speed input, a complete 30-second scenario timeline and
@@ -13,11 +13,11 @@ Fuselage, VS/HS, Propeller or Landing Gear/PGS calculation.
 - Fuselage drag, pitching moment and yawing moment;
 - fixed-blade-pitch BEMT Propeller with prescribed RPM scale;
 - three-point Landing Gear with the original global warm-started PGS solver;
-- `LoadAccumulator`, Newton–Euler `RigidBody6DOF`, `NavionModel` and RK4.
+- `LoadAccumulator`, Newton–Euler `RigidBody6DOF`, `TrainerAircraftModel` and RK4.
 
 Five ordinary subsystems implement `ILoadComponent`. Landing Gear retains the
 two-phase `IGroundContactComponent` contract because its PGS solve needs the
-complete pre-friction aircraft load. `NavionModel` now also copies each
+complete pre-friction aircraft load. `TrainerAircraftModel` now also copies each
 component's already-computed `BodyLoad` into `ModelEvaluation::componentLoads`
 for logging; those copies are diagnostic and are not added twice.
 
@@ -54,7 +54,7 @@ diagnostic in the current model.
 ## Source layout
 
 ```text
-include/navion/
+include/trainer_aircraft/
 ├── components/
 │   ├── fuselage/
 │   ├── landing_gear/
@@ -84,7 +84,7 @@ is the retained scalar kernel and `FuselageComponent.*` is its common
 `ILoadComponent` adapter. Both are compiled. T-6C-labelled YAML/source files
 under `reference_data/` and `docs/fuselage/original/` are provenance material;
 the executable does not load YAML at runtime. Active assembly parameters are
-in `src/config/ProvisionalNavionConfig.cpp` and remain provisional proxies.
+in `src/config/ProvisionalTrainerAircraftConfig.cpp` and remain provisional proxies.
 
 ## Build, test, simulate and plot
 
@@ -95,7 +95,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 mkdir -p results
-./build/navion_stage5_full_aircraft_takeoff_roll results/takeoff_roll.csv
+./build/trainer_aircraft_stage5_full_aircraft_takeoff_roll results/takeoff_roll.csv
 python tools/plot_takeoff_results.py results/takeoff_roll.csv --output-dir results/plots
 ```
 
@@ -106,7 +106,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 New-Item -ItemType Directory -Force results
-.\build\navion_stage5_full_aircraft_takeoff_roll.exe results\takeoff_roll.csv
+.\build\trainer_aircraft_stage5_full_aircraft_takeoff_roll.exe results\takeoff_roll.csv
 & .\.venv\Scripts\python.exe tools\plot_takeoff_results.py `
     results\takeoff_roll.csv --output-dir results\plots
 ```

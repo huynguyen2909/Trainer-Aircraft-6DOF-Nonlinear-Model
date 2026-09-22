@@ -1,8 +1,8 @@
-#include "navion/components/propeller/PropellerModel.hpp"
-#include "navion/components/stabilizers/VATC_HorizontalStabilizer.hpp"
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/propeller/PropellerModel.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -14,10 +14,10 @@
 #include <utility>
 #include <vector>
 
-using namespace navion::propeller;
-using navion::Matrix3;
-using navion::Vec3;
-using navion::cross;
+using namespace trainer_aircraft::propeller;
+using trainer_aircraft::Matrix3;
+using trainer_aircraft::Vec3;
+using trainer_aircraft::cross;
 
 namespace {
 
@@ -65,11 +65,11 @@ RuntimeInput seaLevelInput() {
 }
 
 struct ContextFixture {
-    navion::RigidBodyState state{};
-    navion::ControlInputs controls{};
-    navion::Environment environment{};
-    navion::FlightCondition flightCondition{};
-    navion::MassProperties massProperties{
+    trainer_aircraft::RigidBodyState state{};
+    trainer_aircraft::ControlInputs controls{};
+    trainer_aircraft::Environment environment{};
+    trainer_aircraft::FlightCondition flightCondition{};
+    trainer_aircraft::MassProperties massProperties{
         1000.0,
         Matrix3::diagonal(1200.0, 1500.0, 2000.0)
     };
@@ -92,7 +92,7 @@ struct ContextFixture {
             flightCondition.airspeedMps * flightCondition.airspeedMps;
     }
 
-    navion::EvaluationContext context() const {
+    trainer_aircraft::EvaluationContext context() const {
         return {
             0.0,
             state,
@@ -188,7 +188,7 @@ void testAnalyticBladeElementIntegral() {
 }
 
 void testStaticMomentumClosure() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     const PropellerOutput output = model.evaluate(seaLevelInput());
     require(output.inflow.converged, "Static inflow solution did not converge");
     require(output.disk.thrustN > 0.0, "Static thrust must be positive");
@@ -230,7 +230,7 @@ void testStaticMomentumClosure() {
 }
 
 void testInstallationTransform() {
-    PropellerParameters p = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters p = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     p.hubPositionFromCgBodyM = {};
     p.rotatingInertiaKgM2 = 0.0;
     // Proper +90 radian rotation about body z: propeller +x maps to body +y.
@@ -253,7 +253,7 @@ void testInstallationTransform() {
 }
 
 void testElementSampleSums() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {24.0, 1.5, 2.5};
     const PropellerOutput solved = model.evaluate(input);
@@ -282,7 +282,7 @@ void testElementSampleSums() {
 }
 
 void testAxialSymmetryAndTorqueBookkeeping() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {25.0, 0.0, 0.0};
     const PropellerOutput output = model.evaluate(input);
@@ -322,7 +322,7 @@ void testPFactorSignAgainstStevens() {
         25.0 * std::sin(alphaRad),
     };
 
-    PropellerParameters clockwise = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters clockwise = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     clockwise.hubPositionFromCgBodyM = {};
     const PropellerOutput positive = PropellerModel(clockwise).evaluate(input);
     require(positive.inflow.converged, "Positive-rotation P-factor case failed");
@@ -344,7 +344,7 @@ void testPFactorSignAgainstStevens() {
 }
 
 void testAerodynamicPitchRateDamping() {
-    PropellerParameters p = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters p = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     p.hubPositionFromCgBodyM = {};
     p.rotatingInertiaKgM2 = 0.0;
     const PropellerModel model(p);
@@ -358,7 +358,7 @@ void testAerodynamicPitchRateDamping() {
 }
 
 void testGyroscopicMomentAndTotalMomentIdentity() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {20.0, 1.0, 2.0};
     input.angularRateBodyWrtInertialBodyRadps = {0.02, 0.05, -0.03};
@@ -405,7 +405,7 @@ void testGyroscopicMomentAndTotalMomentIdentity() {
 }
 
 void testDensityScaling() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     RuntimeInput low = seaLevelInput();
     low.airDensityKgM3 = 0.9;
     low.velocityCgRelativeAirBodyMps = {18.0, 0.0, 1.0};
@@ -431,7 +431,7 @@ void testDensityScaling() {
 }
 
 void testGridConvergence() {
-    PropellerParameters coarse = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters coarse = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     coarse.radialElementCount = 32;
     coarse.azimuthStationCount = 48;
     PropellerParameters fine = coarse;
@@ -457,7 +457,7 @@ void testGridConvergence() {
 }
 
 void testTakeoffSweepWithExplicitNumericalGuess() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     constexpr double rotationSpeed_m_s = 65.0 * 0.44704;
     constexpr double groundPitch_rad = 0.035;
 
@@ -489,7 +489,7 @@ void testTakeoffSweepWithExplicitNumericalGuess() {
 }
 
 void testCommonComponentContract() {
-    PropellerParameters parameters = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     parameters.radialElementCount = 24U;
     parameters.azimuthStationCount = 32U;
     const PropellerComponent component(parameters);
@@ -501,7 +501,7 @@ void testCommonComponentContract() {
     fixture.controls.throttle = 1.0;
 
     const PropellerOutput detailed = component.evaluateDetailed(fixture.context());
-    const navion::BodyLoad load = component.computeLoad(fixture.context());
+    const trainer_aircraft::BodyLoad load = component.computeLoad(fixture.context());
     require(detailed.inflow.converged,
             "Common-contract propeller inflow did not converge");
     requireNear(
@@ -529,7 +529,7 @@ void testCommonComponentContract() {
     );
 
     fixture.controls.propellerEnabled = false;
-    const navion::BodyLoad disabled = component.computeLoad(fixture.context());
+    const trainer_aircraft::BodyLoad disabled = component.computeLoad(fixture.context());
     requireNear(vectorNorm(disabled.forceBodyN), 0.0, 0.0,
                 "Disabled PropellerComponent returned force");
     requireNear(vectorNorm(disabled.momentAboutCgBodyNm), 0.0, 0.0,
@@ -537,15 +537,15 @@ void testCommonComponentContract() {
 
     fixture.controls.propellerEnabled = true;
     fixture.controls.propellerSpeedScale = 0.0;
-    const navion::BodyLoad stopped = component.computeLoad(fixture.context());
+    const trainer_aircraft::BodyLoad stopped = component.computeLoad(fixture.context());
     requireNear(vectorNorm(stopped.forceBodyN), 0.0, 0.0,
                 "Zero-speed PropellerComponent returned force");
     requireNear(vectorNorm(stopped.momentAboutCgBodyNm), 0.0, 0.0,
                 "Zero-speed PropellerComponent returned moment");
 }
 
-navion::HorizontalStabilizerConfig zeroHorizontalTailConfig() {
-    navion::HorizontalStabilizerConfig config;
+trainer_aircraft::HorizontalStabilizerConfig zeroHorizontalTailConfig() {
+    trainer_aircraft::HorizontalStabilizerConfig config;
     config.Area = 1.0;
     config.TailSpan = 1.0;
     config.TailMAC = 1.0;
@@ -554,8 +554,8 @@ navion::HorizontalStabilizerConfig zeroHorizontalTailConfig() {
     return config;
 }
 
-navion::VerticalStabilizerConfig zeroVerticalTailConfig() {
-    navion::VerticalStabilizerConfig config;
+trainer_aircraft::VerticalStabilizerConfig zeroVerticalTailConfig() {
+    trainer_aircraft::VerticalStabilizerConfig config;
     config.Area = 1.0;
     config.TailSpan = 1.0;
     config.TailMAC = 1.0;
@@ -564,22 +564,22 @@ navion::VerticalStabilizerConfig zeroVerticalTailConfig() {
     return config;
 }
 
-void testStage3NavionModelAndRk4Integration() {
-    PropellerParameters parameters = makeEstimatedNavionNaca5868_9Parameters();
+void testStage3TrainerAircraftModelAndRk4Integration() {
+    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     parameters.radialElementCount = 16U;
     parameters.azimuthStationCount = 24U;
 
-    navion::NavionModel model({
+    trainer_aircraft::TrainerAircraftModel model({
         1000.0,
         Matrix3::diagonal(1200.0, 1500.0, 2000.0)
     });
     model.addLoadComponent(
-        std::make_unique<navion::HorizontalStabilizer>(
+        std::make_unique<trainer_aircraft::HorizontalStabilizer>(
             zeroHorizontalTailConfig()
         )
     );
     model.addLoadComponent(
-        std::make_unique<navion::VerticalStabilizer>(
+        std::make_unique<trainer_aircraft::VerticalStabilizer>(
             zeroVerticalTailConfig()
         )
     );
@@ -587,15 +587,15 @@ void testStage3NavionModelAndRk4Integration() {
         std::make_unique<PropellerComponent>(parameters)
     );
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {20.0, 0.0, 0.0};
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.propellerEnabled = true;
     controls.throttle = 1.0;
-    navion::Environment environment;
+    trainer_aircraft::Environment environment;
     environment.gravityNedMps2 = {};
 
-    const navion::ModelEvaluation evaluation =
+    const trainer_aircraft::ModelEvaluation evaluation =
         model.evaluate(0.0, state, controls, environment);
     require(evaluation.contributingComponentCount == 3U,
             "Stage 3 must accumulate HS, VS, and Propeller loads");
@@ -604,14 +604,14 @@ void testStage3NavionModelAndRk4Integration() {
     require(evaluation.totalComponentLoad.isFinite(),
             "Stage 3 total component load must be finite");
 
-    navion::RK4Integrator integrator;
-    const navion::RigidBodyState next = integrator.step(
+    trainer_aircraft::RK4Integrator integrator;
+    const trainer_aircraft::RigidBodyState next = integrator.step(
         0.0,
         1.0e-3,
         state,
         [&model, &controls, &environment](
             double stageTimeS,
-            const navion::RigidBodyState& stageState
+            const trainer_aircraft::RigidBodyState& stageState
         ) {
             return model.evaluateDerivative(
                 stageTimeS,
@@ -627,7 +627,7 @@ void testStage3NavionModelAndRk4Integration() {
 }
 
 void testDisabledModel() {
-    const PropellerModel model(makeEstimatedNavionNaca5868_9Parameters());
+    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
     RuntimeInput input = seaLevelInput();
     input.enabled = false;
     const PropellerOutput output = model.evaluate(input);
@@ -639,7 +639,7 @@ void testDisabledModel() {
 }
 
 void testPrescribedRotationRateScale() {
-    PropellerParameters parameters = makeEstimatedNavionNaca5868_9Parameters();
+    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
     parameters.radialElementCount = 12U;
     parameters.azimuthStationCount = 16U;
     const PropellerModel model(parameters);
@@ -687,8 +687,8 @@ int main() {
         {"takeoff sweep with explicit numerical guess",
          testTakeoffSweepWithExplicitNumericalGuess},
         {"common ILoadComponent contract", testCommonComponentContract},
-        {"Stage 3 NavionModel and RK4 integration",
-         testStage3NavionModelAndRk4Integration},
+        {"Stage 3 TrainerAircraftModel and RK4 integration",
+         testStage3TrainerAircraftModelAndRk4Integration},
         {"disabled model", testDisabledModel},
         {"prescribed rotation-rate scale", testPrescribedRotationRateScale},
     };

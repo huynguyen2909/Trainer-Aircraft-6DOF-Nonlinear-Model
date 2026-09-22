@@ -1,8 +1,8 @@
-#include "navion/components/stabilizers/VATC_HorizontalStabilizer.hpp"
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
-#include "navion/integration/RK4Integrator.hpp"
-#include "navion/model/NavionModel.hpp"
-#include "navion/components/propeller/PropellerModel.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/integration/RK4Integrator.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
+#include "trainer_aircraft/components/propeller/PropellerModel.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -11,9 +11,9 @@
 namespace
 {
 
-navion::HorizontalStabilizerConfig makeHorizontalTailConfig()
+trainer_aircraft::HorizontalStabilizerConfig makeHorizontalTailConfig()
 {
-    navion::HorizontalStabilizerConfig config;
+    trainer_aircraft::HorizontalStabilizerConfig config;
     config.Area = 3.99483072;
     config.TailSpan = 3.99741452;
     config.TailMAC = 1.01236110;
@@ -29,9 +29,9 @@ navion::HorizontalStabilizerConfig makeHorizontalTailConfig()
     return config;
 }
 
-navion::VerticalStabilizerConfig makeVerticalTailConfig()
+trainer_aircraft::VerticalStabilizerConfig makeVerticalTailConfig()
 {
-    navion::VerticalStabilizerConfig config;
+    trainer_aircraft::VerticalStabilizerConfig config;
     config.Area = 1.356384384;
     config.RudderArea = 0.7738823232;
     config.TailSpan = 1.50; // Demonstration value; replace during validation.
@@ -47,7 +47,7 @@ navion::VerticalStabilizerConfig makeVerticalTailConfig()
     return config;
 }
 
-void printVector(const char* label, const navion::Vec3& value)
+void printVector(const char* label, const trainer_aircraft::Vec3& value)
 {
     std::cout << label << ' '
               << value.x << ' ' << value.y << ' ' << value.z << '\n';
@@ -57,40 +57,40 @@ void printVector(const char* label, const navion::Vec3& value)
 
 int main()
 {
-    // Demonstration mass properties only; replace with the validated Navion set.
-    const navion::MassProperties massProperties{
+    // Demonstration mass properties only; replace with the validated TrainerAircraft set.
+    const trainer_aircraft::MassProperties massProperties{
         1250.0,
-        navion::Matrix3::diagonal(1800.0, 2500.0, 3200.0)
+        trainer_aircraft::Matrix3::diagonal(1800.0, 2500.0, 3200.0)
     };
 
-    navion::NavionModel model(massProperties);
+    trainer_aircraft::TrainerAircraftModel model(massProperties);
     model.addLoadComponent(
-        std::make_unique<navion::HorizontalStabilizer>(
+        std::make_unique<trainer_aircraft::HorizontalStabilizer>(
             makeHorizontalTailConfig()
         )
     );
     model.addLoadComponent(
-        std::make_unique<navion::VerticalStabilizer>(
+        std::make_unique<trainer_aircraft::VerticalStabilizer>(
             makeVerticalTailConfig()
         )
     );
     model.addLoadComponent(
-        std::make_unique<navion::propeller::PropellerComponent>(
-            navion::propeller::makeEstimatedNavionNaca5868_9Parameters()
+        std::make_unique<trainer_aircraft::propeller::PropellerComponent>(
+            trainer_aircraft::propeller::makeEstimatedTrainerAircraftNaca5868_9Parameters()
         )
     );
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {20.0, 0.0, 0.7};
 
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.propellerEnabled = true;
     controls.throttle = 1.0; // Reserved until an engine/governor model is added.
     controls.elevatorRad = 0.0;
     controls.rudderRad = 0.0;
 
-    navion::Environment environment;
-    const navion::ModelEvaluation evaluation =
+    trainer_aircraft::Environment environment;
+    const trainer_aircraft::ModelEvaluation evaluation =
         model.evaluate(0.0, state, controls, environment);
 
     std::cout << std::fixed << std::setprecision(6);
@@ -106,14 +106,14 @@ int main()
         evaluation.stateDerivative.velocityRateBodyMps2
     );
 
-    navion::RK4Integrator integrator;
-    const navion::RigidBodyState next = integrator.step(
+    trainer_aircraft::RK4Integrator integrator;
+    const trainer_aircraft::RigidBodyState next = integrator.step(
         0.0,
         0.001,
         state,
         [&model, &controls, &environment](
             double stageTimeS,
-            const navion::RigidBodyState& stageState
+            const trainer_aircraft::RigidBodyState& stageState
         ) {
             return model.evaluateDerivative(
                 stageTimeS,

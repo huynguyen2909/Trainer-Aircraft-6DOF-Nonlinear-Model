@@ -218,7 +218,7 @@ BodyLoad.momentAboutCgBodyNm = M_prop_CG_body
 
 Vì moment đã gồm full aerodynamic hub moment, `r × F` và gyroscopic moment,
 `LoadAccumulator` chỉ cộng nó một lần. Không được cộng riêng reaction torque,
-hub bending moment, arm moment hoặc gyro moment ở `NavionModel` hay
+hub bending moment, arm moment hoặc gyro moment ở `TrainerAircraftModel` hay
 `RigidBody6DOF`.
 
 Stage 3 đưa `-omega × H_prop` vào `BodyLoad`. Do đó `MassProperties` không được

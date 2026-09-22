@@ -1,9 +1,9 @@
 @startuml
-title One RK4 Step - Navion Stage 1 Contract
+title One RK4 Step - TrainerAircraft Stage 1 Contract
 
 actor Simulation
 participant RK4Integrator as rk4
-participant NavionModel as navion
+participant TrainerAircraftModel as trainer_aircraft
 participant "ILoadComponent[*]" as components
 participant LoadAccumulator as accumulator
 participant RigidBody6DOF as rigidbody
@@ -12,24 +12,24 @@ Simulation -> rk4 : step(t, dt, state, derivativeFunction)
 activate rk4
 
 loop k1, k2, k3, k4
-    rk4 -> navion : evaluateDerivative(stageTime, stageState, controls, environment)
-    activate navion
-    navion -> navion : calculateFlightCondition()
+    rk4 -> trainer_aircraft : evaluateDerivative(stageTime, stageState, controls, environment)
+    activate trainer_aircraft
+    trainer_aircraft -> trainer_aircraft : calculateFlightCondition()
     create accumulator
-    navion -> accumulator : construct fresh accumulator
+    trainer_aircraft -> accumulator : construct fresh accumulator
 
     loop every registered component
-        navion -> components : computeLoad(EvaluationContext)
-        components --> navion : BodyLoad(F_body, M_CG_body)
-        navion -> accumulator : add(BodyLoad)
+        trainer_aircraft -> components : computeLoad(EvaluationContext)
+        components --> trainer_aircraft : BodyLoad(F_body, M_CG_body)
+        trainer_aircraft -> accumulator : add(BodyLoad)
     end
 
-    navion -> accumulator : total()
-    accumulator --> navion : totalComponentLoad
-    navion -> rigidbody : evaluate(stageState, totalLoad, gravityNed)
-    rigidbody --> navion : StateDerivative
-    navion --> rk4 : StateDerivative
-    deactivate navion
+    trainer_aircraft -> accumulator : total()
+    accumulator --> trainer_aircraft : totalComponentLoad
+    trainer_aircraft -> rigidbody : evaluate(stageState, totalLoad, gravityNed)
+    rigidbody --> trainer_aircraft : StateDerivative
+    trainer_aircraft --> rk4 : StateDerivative
+    deactivate trainer_aircraft
 end
 
 rk4 -> rk4 : weighted RK4 sum\nnormalize q_nb

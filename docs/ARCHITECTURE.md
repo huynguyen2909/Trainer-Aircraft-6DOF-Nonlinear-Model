@@ -3,7 +3,7 @@
 ## Dependency and ownership rules
 
 `RigidBody6DOF` knows no aircraft subsystem. A physical component never
-integrates aircraft state. `NavionModel` alone owns component evaluation order,
+integrates aircraft state. `TrainerAircraftModel` alone owns component evaluation order,
 load assembly and the handoff to Newton–Euler. `RK4Integrator` remains a
 generic state integrator.
 
@@ -15,7 +15,7 @@ generic state integrator.
 | `PGSFrictionSolver` | Solve global projected `J M^-1 J^T` multiplier system | Know gear names or aircraft component types |
 | `LoadAccumulator` | Validate and sum BODY-axis loads about CG | Recompute `r x F`, add gravity or solve constraints |
 | `RigidBody6DOF` | Evaluate Newton–Euler and kinematics | Know PGS, components or numerical integration |
-| `NavionModel` | Build common context and coordinate both load phases | Advance a time step |
+| `TrainerAircraftModel` | Build common context and coordinate both load phases | Advance a time step |
 | `GroundStaticTrimSolver` | Solve pre-power `Down/roll/pitch` from `Fz/L/M` equilibrium | Prescribe takeoff velocity or advance simulation time |
 | `RK4Integrator` | Build k1–k4 trial states and combine derivatives | Own physical history or commit component state |
 
@@ -34,7 +34,7 @@ Their complete moments already include the point-transfer term:
 M_CG = M_intrinsic_at_load_point + r_CG_to_point x F + owned extra moments
 ```
 
-Stage 5.3 adds `ComponentLoadReport` to `ModelEvaluation`. `NavionModel`
+Stage 5.3 adds `ComponentLoadReport` to `ModelEvaluation`. `TrainerAircraftModel`
 stores the exact `BodyLoad` returned by each component while adding it to the
 accumulator, then stores Landing Gear's normal-plus-friction result. This is a
 read-only diagnostic path: no component is evaluated twice and no reported
@@ -48,7 +48,7 @@ other loads. Ground friction therefore cannot be a normal, independent
 `ILoadComponent` without either using incomplete data or introducing hidden
 ordering.
 
-For each derivative evaluation, `NavionModel::evaluateCoupled()` performs:
+For each derivative evaluation, `TrainerAircraftModel::evaluateCoupled()` performs:
 
 ```text
 L_regular = sum(MainWing, Fuselage, HS, VS, Propeller)
@@ -98,7 +98,7 @@ uses its own trial state, controls and common outer-step `dt`. Evaluation does
 not modify compression/slip/steering or warm-start values.
 
 After RK4 produces the accepted state, the driver calls
-`NavionModel::commitAcceptedStep()`. `NavionModel` re-evaluates the coupled
+`TrainerAircraftModel::commitAcceptedStep()`. `TrainerAircraftModel` re-evaluates the coupled
 loads at that accepted state and commits exactly once. This prevents rejected
 or intermediate stages from becoming physical history while retaining the
 original low-speed slip hold and temporal-coherence warm start.
@@ -126,7 +126,7 @@ See `stage5_classes.puml` and `stage5_sequence.puml`.
 ## Initialization rule
 
 Ground static trim is outside the time integrator. It repeatedly calls the
-same complete `NavionModel::evaluate()` path with zero rates and adjusts only
+same complete `TrainerAircraftModel::evaluate()` path with zero rates and adjusts only
 CG Down position, roll and pitch. After convergence, the caller commits the
 contact state once. The Stage 5.3 scenario then integrates a two-second
 zero-RPM hold, releases the brakes, applies a five-second stage-wise RPM ramp

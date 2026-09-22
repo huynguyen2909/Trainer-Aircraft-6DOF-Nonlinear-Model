@@ -1,5 +1,5 @@
 @startuml
-title Navion Stage 5.3 - Full Component OOP Architecture and Diagnostics
+title TrainerAircraft Stage 5.3 - Full Component OOP Architecture and Diagnostics
 
 interface ILoadComponent {
   + computeLoad(context) : BodyLoad
@@ -20,7 +20,7 @@ class VerticalStabilizer
 class PropellerComponent
 class LandingGearComponent
 class PGSFrictionSolver
-class NavionModel
+class TrainerAircraftModel
 class LoadAccumulator
 class RigidBody6DOF
 class RK4Integrator
@@ -37,12 +37,12 @@ FuselageComponent *-- FuselageAerodynamics : scalar kernel
 
 IGroundContactComponent <|.. LandingGearComponent
 LandingGearComponent *-- PGSFrictionSolver
-NavionModel o-- ILoadComponent
-NavionModel *-- IGroundContactComponent
-NavionModel ..> LoadAccumulator
-NavionModel *-- RigidBody6DOF
-NavionModel ..> ComponentLoadReport : records each computed load
+TrainerAircraftModel o-- ILoadComponent
+TrainerAircraftModel *-- IGroundContactComponent
+TrainerAircraftModel ..> LoadAccumulator
+TrainerAircraftModel *-- RigidBody6DOF
+TrainerAircraftModel ..> ComponentLoadReport : records each computed load
 ModelEvaluation o-- ComponentLoadReport
-RK4Integrator ..> NavionModel : stage derivatives + accepted commit
-GroundStaticTrimSolver ..> NavionModel : pre-power equilibrium evaluations
+RK4Integrator ..> TrainerAircraftModel : stage derivatives + accepted commit
+GroundStaticTrimSolver ..> TrainerAircraftModel : pre-power equilibrium evaluations
 @enduml

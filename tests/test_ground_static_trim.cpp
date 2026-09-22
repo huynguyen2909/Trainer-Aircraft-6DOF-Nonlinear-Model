@@ -1,5 +1,5 @@
-#include "navion/config/ProvisionalNavionConfig.hpp"
-#include "navion/initialization/GroundStaticTrim.hpp"
+#include "trainer_aircraft/config/ProvisionalTrainerAircraftConfig.hpp"
+#include "trainer_aircraft/initialization/GroundStaticTrim.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -21,31 +21,31 @@ void require(bool condition, const char* message)
 
 int main()
 {
-    const navion::ProvisionalNavionConfig aircraft =
-        navion::makeProvisionalNavionConfig();
-    navion::NavionModel model(aircraft.massProperties);
-    navion::addProvisionalNavionComponents(model, aircraft);
+    const trainer_aircraft::ProvisionalTrainerAircraftConfig aircraft =
+        trainer_aircraft::makeProvisionalTrainerAircraftConfig();
+    trainer_aircraft::TrainerAircraftModel model(aircraft.massProperties);
+    trainer_aircraft::addProvisionalTrainerAircraftComponents(model, aircraft);
 
-    navion::RigidBodyState initialGuess;
+    trainer_aircraft::RigidBodyState initialGuess;
     initialGuess.positionNedM.z = -0.90;
     initialGuess.attitudeBodyToNed =
-        navion::Quaternion{0.9999, 0.005, -0.010, 0.0}.normalized();
+        trainer_aircraft::Quaternion{0.9999, 0.005, -0.010, 0.0}.normalized();
     initialGuess.velocityBodyMps = {1.0, -0.5, 0.25};
     initialGuess.angularRateBodyRadps = {0.1, -0.1, 0.05};
 
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.throttle = 0.0;
     controls.propellerEnabled = false;
     controls.landingGearExtended = true;
     controls.brakeLeft = 1.0;
     controls.brakeRight = 1.0;
 
-    navion::GroundStaticTrimSolver solver;
-    const navion::GroundStaticTrimResult result = solver.solve(
+    trainer_aircraft::GroundStaticTrimSolver solver;
+    const trainer_aircraft::GroundStaticTrimResult result = solver.solve(
         model,
         initialGuess,
         controls,
-        navion::Environment{}
+        trainer_aircraft::Environment{}
     );
 
     require(result.converged, "Ground static trim did not converge.");

@@ -1,8 +1,8 @@
-#include "navion/components/fuselage/FuselageAerodynamics.hpp"
+#include "trainer_aircraft/components/fuselage/FuselageAerodynamics.hpp"
 
 #include <cmath>
 
-namespace navion::fuselage {
+namespace trainer_aircraft::fuselage {
 
 namespace {
 
@@ -145,4 +145,4 @@ FuselageAerodynamicOutput FuselageAerodynamics::evaluate(
   return out;
 }
 
-}  // namespace navion::fuselage
+}  // namespace trainer_aircraft::fuselage

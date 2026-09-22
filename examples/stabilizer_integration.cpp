@@ -1,6 +1,6 @@
-#include "navion/components/stabilizers/VATC_HorizontalStabilizer.hpp"
-#include "navion/components/stabilizers/VATC_VerticalStabilizer.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
+#include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <iomanip>
 #include <iostream>
@@ -16,9 +16,9 @@ double degreesToRadians(double degrees)
     return degrees * PI / 180.0;
 }
 
-navion::HorizontalStabilizerConfig makeHorizontalTailConfig()
+trainer_aircraft::HorizontalStabilizerConfig makeHorizontalTailConfig()
 {
-    navion::HorizontalStabilizerConfig config;
+    trainer_aircraft::HorizontalStabilizerConfig config;
     config.Area = 3.99483072;
     config.TailSpan = 3.99741452;
     config.TailMAC = 1.01236110;
@@ -36,15 +36,15 @@ navion::HorizontalStabilizerConfig makeHorizontalTailConfig()
     return config;
 }
 
-navion::VerticalStabilizerConfig makeVerticalTailConfig()
+trainer_aircraft::VerticalStabilizerConfig makeVerticalTailConfig()
 {
     constexpr double squareFootToSquareMetre = 0.09290304;
 
-    navion::VerticalStabilizerConfig config;
+    trainer_aircraft::VerticalStabilizerConfig config;
     config.Area = 14.6 * squareFootToSquareMetre;
     config.RudderArea = 8.33 * squareFootToSquareMetre;
-    config.TailSpan = 1.50; // Replace with the authoritative Navion geometry.
-    config.TailMAC = 0.90;  // Replace with the authoritative Navion geometry.
+    config.TailSpan = 1.50; // Replace with the authoritative TrainerAircraft geometry.
+    config.TailMAC = 0.90;  // Replace with the authoritative TrainerAircraft geometry.
     config.PositionWrtCG[0] = -4.649228943;
     config.PositionWrtCG[2] = -0.765145070;
     config.MomentArm = 4.649228943;
@@ -61,36 +61,36 @@ navion::VerticalStabilizerConfig makeVerticalTailConfig()
 
 int main()
 {
-    const navion::MassProperties massProperties{
-        1250.0, // Demonstration value; replace with the selected Navion loading.
-        navion::Matrix3::diagonal(1800.0, 2300.0, 3500.0)
+    const trainer_aircraft::MassProperties massProperties{
+        1250.0, // Demonstration value; replace with the selected TrainerAircraft loading.
+        trainer_aircraft::Matrix3::diagonal(1800.0, 2300.0, 3500.0)
     };
 
-    navion::NavionModel model(massProperties);
+    trainer_aircraft::TrainerAircraftModel model(massProperties);
     model.addLoadComponent(
-        std::make_unique<navion::HorizontalStabilizer>(
+        std::make_unique<trainer_aircraft::HorizontalStabilizer>(
             makeHorizontalTailConfig()
         )
     );
     model.addLoadComponent(
-        std::make_unique<navion::VerticalStabilizer>(
+        std::make_unique<trainer_aircraft::VerticalStabilizer>(
             makeVerticalTailConfig()
         )
     );
 
-    navion::RigidBodyState state;
+    trainer_aircraft::RigidBodyState state;
     state.velocityBodyMps = {50.0, 1.0, 2.0};
     state.angularRateBodyRadps = {0.01, 0.02, -0.01};
 
-    navion::ControlInputs controls;
+    trainer_aircraft::ControlInputs controls;
     controls.elevatorRad = degreesToRadians(-2.0);
     controls.rudderRad = degreesToRadians(1.0);
 
-    navion::Environment environment;
-    const navion::ModelEvaluation evaluation =
+    trainer_aircraft::Environment environment;
+    const trainer_aircraft::ModelEvaluation evaluation =
         model.evaluate(0.0, state, controls, environment);
 
-    const navion::BodyLoad& load = evaluation.totalComponentLoad;
+    const trainer_aircraft::BodyLoad& load = evaluation.totalComponentLoad;
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "component_count  "
               << evaluation.contributingComponentCount << '\n';

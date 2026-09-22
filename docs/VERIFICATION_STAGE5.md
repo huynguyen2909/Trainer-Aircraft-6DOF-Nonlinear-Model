@@ -85,7 +85,7 @@ markers identify trim completion, brake release/RPM-ramp start and 2300 RPM.
 ## Scope limit
 
 This verifies deterministic integration and diagnostic accounting, not real
-Navion performance. Aerodynamic, mass, inertia, gear and installation values
+TrainerAircraft performance. Aerodynamic, mass, inertia, gear and installation values
 remain provisional/mixed-source; the example does not command elevator
 rotation or flap deployment; and prescribed RPM is not a dynamic engine and
 governor model.

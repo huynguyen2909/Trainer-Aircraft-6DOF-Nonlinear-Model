@@ -1,6 +1,6 @@
-#include "navion/components/ILoadComponent.hpp"
-#include "navion/components/landing_gear/LandingGearComponent.hpp"
-#include "navion/model/NavionModel.hpp"
+#include "trainer_aircraft/components/ILoadComponent.hpp"
+#include "trainer_aircraft/components/landing_gear/LandingGearComponent.hpp"
+#include "trainer_aircraft/model/TrainerAircraftModel.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -11,21 +11,21 @@
 namespace
 {
 
-using navion::BodyLoad;
-using navion::ControlInputs;
-using navion::Environment;
-using navion::EvaluationContext;
-using navion::FlightCondition;
-using navion::MassProperties;
-using navion::Matrix3;
-using navion::RigidBodyState;
-using navion::Vec3;
-using navion::landing_gear::BrakeGroup;
-using navion::landing_gear::GearParameters;
-using navion::landing_gear::LandingGearComponent;
-using navion::landing_gear::LandingGearParameters;
-using navion::landing_gear::PGSFrictionSolver;
-using navion::landing_gear::SteeringMode;
+using trainer_aircraft::BodyLoad;
+using trainer_aircraft::ControlInputs;
+using trainer_aircraft::Environment;
+using trainer_aircraft::EvaluationContext;
+using trainer_aircraft::FlightCondition;
+using trainer_aircraft::MassProperties;
+using trainer_aircraft::Matrix3;
+using trainer_aircraft::RigidBodyState;
+using trainer_aircraft::Vec3;
+using trainer_aircraft::landing_gear::BrakeGroup;
+using trainer_aircraft::landing_gear::GearParameters;
+using trainer_aircraft::landing_gear::LandingGearComponent;
+using trainer_aircraft::landing_gear::LandingGearParameters;
+using trainer_aircraft::landing_gear::PGSFrictionSolver;
+using trainer_aircraft::landing_gear::SteeringMode;
 
 void require(bool condition, const std::string& message)
 {
@@ -99,7 +99,7 @@ RigidBodyState contactingState()
     return state;
 }
 
-class ConstantLoadComponent final : public navion::ILoadComponent
+class ConstantLoadComponent final : public trainer_aircraft::ILoadComponent
 {
 public:
     explicit ConstantLoadComponent(BodyLoad load) : load_(load) {}
@@ -121,7 +121,7 @@ private:
 void testPurePgsProjection()
 {
     PGSFrictionSolver solver(50, 1.0e-12);
-    navion::FrictionConstraint constraint;
+    trainer_aircraft::FrictionConstraint constraint;
     constraint.directionBody = {1.0, 0.0, 0.0};
     constraint.minimumForceN = -100.0;
     constraint.maximumForceN = 100.0;
@@ -243,9 +243,9 @@ void testEvaluationIsReadOnlyUntilCommit()
                 1.0e-12, "Accepted-step commit must retain low-speed slip history");
 }
 
-void testNavionTwoPhaseAssemblyAndDiagnostics()
+void testTrainerAircraftTwoPhaseAssemblyAndDiagnostics()
 {
-    navion::NavionModel model(massProperties());
+    trainer_aircraft::TrainerAircraftModel model(massProperties());
     model.addLoadComponent(std::make_unique<ConstantLoadComponent>(
         BodyLoad{{200.0, 0.0, 0.0}, {}}
     ));
@@ -271,11 +271,11 @@ void testNavionTwoPhaseAssemblyAndDiagnostics()
     require(evaluation.contributingComponentCount == 2U,
             "The accumulator must add Landing Gear exactly once.");
     require(evaluation.groundContactCount == 1U,
-            "NavionModel must expose weight-on-wheels diagnostics.");
+            "TrainerAircraftModel must expose weight-on-wheels diagnostics.");
     require(evaluation.groundContacts.size() == 1U,
             "Per-gear diagnostics must survive the common OOP boundary.");
     require(evaluation.frictionSolverIterations > 0U,
-            "NavionModel must execute PGS after preliminary load assembly.");
+            "TrainerAircraftModel must execute PGS after preliminary load assembly.");
     require(evaluation.groundFrictionLoad.forceBodyN.x < 0.0,
             "PGS must react to a sibling component's forward force.");
     requireNear(
@@ -298,7 +298,7 @@ void testNavionTwoPhaseAssemblyAndDiagnostics()
 
 void testGravityIsNotDoubleCounted()
 {
-    navion::NavionModel model(massProperties());
+    trainer_aircraft::TrainerAircraftModel model(massProperties());
     model.setGroundContactComponent(
         std::make_unique<LandingGearComponent>(singleGearParameters())
     );
@@ -344,7 +344,7 @@ void testRetractionDisablesContactOnlyWhenRequested()
 void testOriginalThreeGearGlobalPgsPath()
 {
     LandingGearComponent gear(
-        navion::landing_gear::makeT6cReferenceLandingGearParameters()
+        trainer_aircraft::landing_gear::makeT6cReferenceLandingGearParameters()
     );
     RigidBodyState state;
     state.positionNedM.z = -2.0;
@@ -355,7 +355,7 @@ void testOriginalThreeGearGlobalPgsPath()
     Environment environment;
     const FlightCondition flightCondition{};
     const MassProperties mass =
-        navion::landing_gear::makeT6cReferenceMassProperties();
+        trainer_aircraft::landing_gear::makeT6cReferenceMassProperties();
     const EvaluationContext context{
         0.0, state, controls, environment, flightCondition, mass
     };
@@ -385,11 +385,11 @@ int main()
         testNoBrakeKeepsRollingFrictionAndPgs();
         testBrakeSteeringAndPacejkaRemainAvailable();
         testEvaluationIsReadOnlyUntilCommit();
-        testNavionTwoPhaseAssemblyAndDiagnostics();
+        testTrainerAircraftTwoPhaseAssemblyAndDiagnostics();
         testGravityIsNotDoubleCounted();
         testRetractionDisablesContactOnlyWhenRequested();
         testOriginalThreeGearGlobalPgsPath();
-        std::cout << "All Navion Stage 4 Landing Gear/PGS tests passed.\n";
+        std::cout << "All TrainerAircraft Stage 4 Landing Gear/PGS tests passed.\n";
     }
     catch (const std::exception& exception)
     {

@@ -30,7 +30,7 @@ x = [position_Down, roll, pitch]
 ```
 
 North/East position and yaw are retained from the initial guess. At every
-iteration the full `NavionModel::evaluate()` path is called, including normal
+iteration the full `TrainerAircraftModel::evaluate()` path is called, including normal
 strut loads and PGS friction. Gravity is transformed to BODY axes and the
 solver drives
 

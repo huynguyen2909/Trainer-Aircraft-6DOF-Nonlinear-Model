@@ -17,7 +17,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "navion/components/fuselage/FuselageAerodynamics.hpp"
+#include "trainer_aircraft/components/fuselage/FuselageAerodynamics.hpp"
 
 namespace {
 
@@ -30,8 +30,8 @@ double DegToRad(double deg) { return deg * PI / 180.0; }
 // taken from Table 3's "Reference" row -- the paper itself uses df=3.45m
 // there, not Table 1's 3.4m; a ~1.5% discrepancy in the paper, not ours).
 // Used only by the regression test.
-navion::fuselage::FuselageGeometry MakeNicolosiReferenceGeometry() {
-  navion::fuselage::FuselageGeometry g;
+trainer_aircraft::fuselage::FuselageGeometry MakeNicolosiReferenceGeometry() {
+  trainer_aircraft::fuselage::FuselageGeometry g;
   g.Lf_m = 30.0;
   g.df_m = 3.45;
   g.Ln_m = 5.7;
@@ -48,8 +48,8 @@ navion::fuselage::FuselageGeometry MakeNicolosiReferenceGeometry() {
 
 // Source-aircraft geometry preserved for reference verification only. See the
 // YAML file above for which values were VERIFIED versus ESTIMATED.
-navion::fuselage::FuselageGeometry MakeSourceAircraftGeometry() {
-  navion::fuselage::FuselageGeometry g;
+trainer_aircraft::fuselage::FuselageGeometry MakeSourceAircraftGeometry() {
+  trainer_aircraft::fuselage::FuselageGeometry g;
   g.Lf_m = 10.18;
   g.df_m = 1.05;
   g.Ln_m = 1.93;
@@ -66,11 +66,11 @@ navion::fuselage::FuselageGeometry MakeSourceAircraftGeometry() {
 
 // Source-aircraft tuning, hand-transcribed from the reference YAML. Every
 // pitch/yaw field here is UNCALIBRATED.
-navion::fuselage::FuselageTuning MakeSourceAircraftTuning() {
-  navion::fuselage::FuselageTuning t;
+trainer_aircraft::fuselage::FuselageTuning MakeSourceAircraftTuning() {
+  trainer_aircraft::fuselage::FuselageTuning t;
   t.windshield_drag_increment = 0.0;
 
-  navion::fuselage::FuselagePitchTuning& p = t.pitch;
+  trainer_aircraft::fuselage::FuselagePitchTuning& p = t.pitch;
   p.fineness_ratio_ref = 8.7;
   p.nose_fineness_ratio_ref = 1.6;
   p.windshield_angle_ref_rad = DegToRad(40.0);
@@ -95,7 +95,7 @@ navion::fuselage::FuselageTuning MakeSourceAircraftTuning() {
   p.cmalpha_tail_upsweep_angle_sensitivity_per_rad = 0.0005;
   p.cmalpha_tail_fineness_ratio_sensitivity = 0.0005;
 
-  navion::fuselage::FuselageYawTuning& y = t.yaw;
+  trainer_aircraft::fuselage::FuselageYawTuning& y = t.yaw;
   y.fineness_ratio_ref = 8.7;
   y.nose_fineness_ratio_ref = 1.6;
   y.tail_fineness_ratio_ref = 2.8;
@@ -116,11 +116,11 @@ void RunRegressionTest() {
   std::printf("Geometry: Lf=30m df=3.45m FR=%.3f  Re=202e6  M=0.52\n",
               30.0 / 3.45);
 
-  navion::fuselage::FuselageAerodynamics model(
+  trainer_aircraft::fuselage::FuselageAerodynamics model(
       MakeNicolosiReferenceGeometry(),
-      navion::fuselage::FuselageTuning{});  // drag needs no tuning
+      trainer_aircraft::fuselage::FuselageTuning{});  // drag needs no tuning
 
-  navion::fuselage::FuselageAeroState state;
+  trainer_aircraft::fuselage::FuselageAeroState state;
   // rho/mu are arbitrary (only Re, computed from them below, and M feed
   // CD -- force isn't checked here); V is solved backwards so that
   // Re = rho*V*Lf/mu lands exactly on the paper's own Table 2 value (2.02e8).
@@ -131,7 +131,7 @@ void RunRegressionTest() {
   state.alpha_rad = 0.0;
   state.beta_rad = 0.0;
 
-  const navion::fuselage::FuselageAerodynamicOutput out = model.evaluate(state);
+  const trainer_aircraft::fuselage::FuselageAerodynamicOutput out = model.evaluate(state);
 
   std::printf("Re = %.4e (target 2.02e8)\n", out.reynolds);
   std::printf("Cf (Eq.2)          = %.6f\n", out.cf);
@@ -152,13 +152,13 @@ void RunSourceAircraftSweep() {
   std::printf("=== Source-aircraft fuselage sweep (partly ESTIMATED -- see\n");
   std::printf("    reference_data/t6c/fuselage_source_parameters.yaml) ===\n");
 
-  navion::fuselage::FuselageAerodynamics model(
+  trainer_aircraft::fuselage::FuselageAerodynamics model(
       MakeSourceAircraftGeometry(), MakeSourceAircraftTuning());
 
   std::printf("%8s %10s %10s %10s %10s %10s\n", "V(m/s)", "Re", "CD_Sfront",
               "CD_Sw", "Drag(N)", "CM");
   for (double v = 40.0; v <= 150.0; v += 10.0) {
-    navion::fuselage::FuselageAeroState state;
+    trainer_aircraft::fuselage::FuselageAeroState state;
     state.V_mps = v;
     state.rho_kgm3 = 1.225;  // ISA sea level
     state.mu_pas = 1.789e-5;  // ISA sea level
@@ -166,7 +166,7 @@ void RunSourceAircraftSweep() {
     state.alpha_rad = DegToRad(2.0);  // fixed small AoA for the sweep
     state.beta_rad = 0.0;
 
-    const navion::fuselage::FuselageAerodynamicOutput out = model.evaluate(state);
+    const trainer_aircraft::fuselage::FuselageAerodynamicOutput out = model.evaluate(state);
     std::printf("%8.1f %10.3e %10.5f %10.5f %10.2f %10.5f\n", v, out.reynolds,
                 out.cd_fuselage_sfront, out.cd_fuselage_sw, out.drag_n, out.cm);
   }

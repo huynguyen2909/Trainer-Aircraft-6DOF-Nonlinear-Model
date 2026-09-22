@@ -9,7 +9,7 @@ Propeller Stage 3 gồm hai lớp có vai trò khác nhau:
 | `propeller::PropellerModel` | Kernel BEMT, tra polar, tích phân disk và giải uniform inflow |
 | `propeller::PropellerComponent` | Adapter aircraft-facing triển khai `ILoadComponent` |
 
-Chỉ `PropellerComponent` được đăng ký với `NavionModel`. Kernel vẫn có
+Chỉ `PropellerComponent` được đăng ký với `TrainerAircraftModel`. Kernel vẫn có
 `RuntimeInput` và `PropellerOutput` để unit test, xuất blade-element diagnostics
 và kiểm tra BEMT độc lập.
 
@@ -37,7 +37,7 @@ context.controls.propellerEnabled
     -> RuntimeInput.enabled
 ```
 
-Uniform atmosphere wind đã được `NavionModel` đưa vào aircraft-relative
+Uniform atmosphere wind đã được `TrainerAircraftModel` đưa vào aircraft-relative
 velocity. Propeller không trừ wind lần thứ hai.
 
 ## 3. Đầu ra tải
@@ -107,11 +107,11 @@ engine/governor, cần mở rộng state/input một cách tường minh thay v�
 
 ## 6. Math type dùng chung
 
-`navion::propeller::Vec3` và `Mat3` riêng đã được loại bỏ. Propeller hiện dùng:
+`trainer_aircraft::propeller::Vec3` và `Mat3` riêng đã được loại bỏ. Propeller hiện dùng:
 
 ```cpp
-navion::Vec3
-navion::Matrix3
+trainer_aircraft::Vec3
+trainer_aircraft::Matrix3
 ```
 
 `Matrix3::transposed()` được bổ sung vào math core để tạo
@@ -121,18 +121,18 @@ adapter vector/matrix và tránh trộn frame ở biên component.
 ## 7. Đăng ký component
 
 ```cpp
-#include "navion/components/propeller/PropellerModel.hpp"
+#include "trainer_aircraft/components/propeller/PropellerModel.hpp"
 
-navion::NavionModel model(massProperties);
+trainer_aircraft::TrainerAircraftModel model(massProperties);
 
 model.addLoadComponent(
-    std::make_unique<navion::propeller::PropellerComponent>(
-        navion::propeller::makeEstimatedNavionNaca5868_9Parameters()
+    std::make_unique<trainer_aircraft::propeller::PropellerComponent>(
+        trainer_aircraft::propeller::makeEstimatedTrainerAircraftNaca5868_9Parameters()
     )
 );
 ```
 
-Không gọi propeller trực tiếp trong vòng lặp RK4. `NavionModel` sẽ gọi component
+Không gọi propeller trực tiếp trong vòng lặp RK4. `TrainerAircraftModel` sẽ gọi component
 cùng VS, HS và các component tương lai tại từng derivative evaluation.
 
 ## 8. Thay đổi tên dữ liệu Propeller
@@ -151,11 +151,11 @@ quan trọng:
 | `inducedVelocity_m_s` | `inducedVelocityMps` |
 | `chord_m`, `pitch_rad` | `chordM`, `pitchRad` |
 
-Factory `makeEstimatedNavionNaca5868_9Parameters()` đã được cập nhật tương ứng.
+Factory `makeEstimatedTrainerAircraftNaca5868_9Parameters()` đã được cập nhật tương ứng.
 
 ## 9. Giới hạn dữ liệu
 
 Kiến trúc và kernel đã tích hợp, nhưng factory hiện vẫn chứa geometry,
 Clark-Y polar, RPM, inertia và installation ước lượng từ Propeller V1. Không
-dùng thrust/torque hiện tại làm dữ liệu validation Navion trước khi thay bằng
+dùng thrust/torque hiện tại làm dữ liệu validation TrainerAircraft trước khi thay bằng
 geometry/polar đã số hóa và dữ liệu vận hành đáng tin cậy.
