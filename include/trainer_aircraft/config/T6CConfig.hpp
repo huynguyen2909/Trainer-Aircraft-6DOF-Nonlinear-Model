@@ -18,7 +18,9 @@ struct T6CMassReference
     double publicInternalFuelCapacityKg{544.0};
 
     std::optional<double> flightMassKg{};
-    std::optional<Vec3> cgFromDatumBodyM{};
+    // Auxiliary D -> CG vector resolved along BODY FRD axes. D is the source
+    // drawing datum; this is not the position of CG in the BODY frame (zero).
+    std::optional<Vec3> cgFromDrawingDatumFrdM{};
     std::optional<Matrix3> inertiaAboutCgBodyKgM2{};
 };
 
@@ -29,9 +31,9 @@ struct T6CWingGeometry
     double aspectRatio{10.20 * 10.20 / 16.28};
 
     std::optional<double> meanAerodynamicChordM{};
-    // BODY FRD vector from the PC-9 M drawing datum to the wing MAC leading
-    // edge. Populated only in the explicitly named PC-9 M proxy configuration.
-    std::optional<Vec3> macLeadingEdgeFromDatumBodyM{};
+    // Auxiliary D -> wing MAC leading-edge vector resolved along BODY FRD axes.
+    // Convert to CG-origin BODY coordinates before using it as a lever arm.
+    std::optional<Vec3> macLeadingEdgeFromDrawingDatumFrdM{};
     std::optional<double> rootChordM{};
     std::optional<double> tipChordM{};
     std::optional<double> taperRatio{};
@@ -45,12 +47,12 @@ struct T6CTailGeometry
     std::optional<double> horizontalAreaM2{};
     std::optional<double> horizontalSpanM{};
     std::optional<double> horizontalMeanAerodynamicChordM{};
-    std::optional<Vec3> horizontalAerodynamicCenterFromDatumBodyM{};
+    std::optional<Vec3> horizontalAerodynamicCenterFromDrawingDatumFrdM{};
 
     std::optional<double> verticalAreaM2{};
     std::optional<double> verticalSpanM{};
     std::optional<double> verticalMeanAerodynamicChordM{};
-    std::optional<Vec3> verticalAerodynamicCenterFromDatumBodyM{};
+    std::optional<Vec3> verticalAerodynamicCenterFromDrawingDatumFrdM{};
 };
 
 struct T6CAirframeGeometry
@@ -61,18 +63,23 @@ struct T6CAirframeGeometry
     T6CTailGeometry tail{};
 };
 
-enum class T6CDatumSource
+enum class T6CDrawingDatumSource
 {
     PC9MModelBuildingPlanPage5
 };
 
 struct T6CConfig
 {
-    // When populated, every position-from-datum Vec3 is expressed in BODY
-    // FRD relative to this explicitly recorded geometric origin.
-    std::optional<T6CDatumSource> datumSource{};
+    // BODY is always CG-origin and FRD. The optional drawing datum D is only
+    // an auxiliary origin for source measurements; its vectors use FRD axes.
+    std::optional<T6CDrawingDatumSource> drawingDatumSource{};
     T6CMassReference mass{};
     T6CAirframeGeometry geometry{};
+
+    // r_(CG->P)^B = r_(D->P)^B - r_(D->CG)^B. Returns nullopt until the
+    // drawing datum and an estimated/measured CG relative to it are known.
+    [[nodiscard]] std::optional<Vec3> positionFromCgBodyM(
+        const Vec3& positionFromDrawingDatumFrdM) const noexcept;
 
     // True only after maneuver mass properties and the geometry needed by the
     // aerodynamic components have been populated from controlled sources.

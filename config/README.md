@@ -16,11 +16,13 @@ historical-aircraft defaults. Add each value to the YAML source ledger first,
 including its coordinate datum and uncertainty, then expose it in the typed
 configuration.
 
-`makeT6CPC9MProxyConfig()` adds a separate Pilatus PC-9 M page-5 drawing
-datum, a 1.650 m wing MAC, and an explicitly assumed CG at 30% MAC. Its
-coordinates use the repository's BODY FRD convention: drawing (+X aft, +Y
-right, +Z up) maps to BODY (-X, +Y, -Z). The estimated CG is
-`(-0.761, 0, -2.000) m` relative to the drawing origin; its vertical position
-assumes the wing's 2.000 m reference plane. See
+`makeT6CPC9MProxyConfig()` adds an auxiliary Pilatus PC-9 M page-5 drawing
+datum D, a 1.650 m wing MAC, and an explicitly assumed CG at 30% MAC. BODY
+always has its origin at CG and uses FRD axes: `r_CG^B = (0, 0, 0) m`.
+Drawing (+X aft, +Y right, +Z up) maps to FRD axes (-X, +Y, -Z). The vector
+from D to the estimated CG, expressed in FRD axes, is
+`(-0.761, 0, -2.000) m`; its vertical component assumes the wing's 2.000 m
+reference plane. Call `positionFromCgBodyM(r_D_to_point_FRD)` to subtract the
+CG offset and obtain a CG-origin BODY lever arm. See
 `reference_data/t6c/geometry_mass.yaml` for the source and limitations. This
 proxy factory remains incomplete and cannot assemble a simulation-ready model.

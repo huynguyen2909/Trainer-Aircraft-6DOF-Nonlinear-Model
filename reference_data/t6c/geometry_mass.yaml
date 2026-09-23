@@ -34,7 +34,7 @@ mass_reference:
     unit: kg
     source: textron_t6c_product_page
   flight_mass: null
-  cg_from_defined_datum_body_m: null
+  cg_from_drawing_datum_resolved_in_frd_m: null
   inertia_about_cg_body_kg_m2: null
 
 external_geometry:
@@ -70,7 +70,7 @@ unresolved_geometry:
   horizontal_tail: null
   vertical_tail: null
   control_surfaces: null
-  component_positions_from_defined_datum_body_m: null
+  component_positions_from_drawing_datum_resolved_in_frd_m: null
   propeller_geometry: null
 
 # Separate from the Textron public baseline: a preliminary coordinate datum,
@@ -84,18 +84,23 @@ provisional_pc9m_proxy:
     axes: {x: aft, y: aircraft_right, z: up}
     unit: m
   model_body_frame:
+    origin: estimated_cg
+    cg_from_body_origin_body_m: {x: 0.0, y: 0.0, z: 0.0}
     axes: {x: forward, y: aircraft_right, z: down}
-    conversion_from_drawing: {x_body: '-X_drawing', y_body: '+Y_drawing', z_body: '-Z_drawing'}
+    drawing_axes_to_frd: {x: '-X_drawing', y: '+Y_drawing', z: '-Z_drawing'}
+    translation: 'position_from_cg_body_m = position_from_drawing_datum_resolved_in_frd_m - cg_from_drawing_datum_resolved_in_frd_m'
   wing_mac:
     length_m: 1.650
     leading_edge_x_aft_of_drawing_datum_m: 0.266
-    leading_edge_x_body_m: -0.266
+    leading_edge_from_drawing_datum_resolved_in_frd_m: {x: -0.266, y: 0.0, z: -2.0}
+    leading_edge_from_cg_body_m: {x: 0.495, y: 0.0, z: 0.0}
     source: pilatus_pc9m_model_building_plan
     note: Z at the MAC leading edge is provisionally placed on the 2.000 m drawing reference plane; its T-6C installation height is unverified.
   estimated_cg:
     fraction_of_mac_from_le: 0.30
     x_aft_of_drawing_datum_m: 0.761
-    from_datum_body_m: {x: -0.761, y: 0.0, z: -2.0}
+    from_drawing_datum_resolved_in_frd_m: {x: -0.761, y: 0.0, z: -2.0}
+    from_cg_body_m: {x: 0.0, y: 0.0, z: 0.0}
     source: assumed_30_percent_pc9m_mac
     note: Y=0 assumes lateral symmetry; Z=2.000 m above the drawing reference line assumes the CG lies in the wing reference plane. Neither CG nor MAC Z is measured on a T-6C.
   intended_factory: makeT6CPC9MProxyConfig
