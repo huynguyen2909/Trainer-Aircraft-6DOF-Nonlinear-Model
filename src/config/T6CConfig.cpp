@@ -14,6 +14,19 @@ std::optional<Vec3> T6CConfig::positionFromCgBodyM(
     return positionFromDrawingDatumFrdM - *mass.cgFromDrawingDatumFrdM;
 }
 
+std::optional<Vec3> T6CConfig::wingQuarterMacFromCgBodyM() const noexcept
+{
+    if (!geometry.wing.meanAerodynamicChordM.has_value() ||
+        !geometry.wing.macLeadingEdgeFromDrawingDatumFrdM.has_value())
+    {
+        return std::nullopt;
+    }
+    const auto quarterMacFromDrawingDatumFrdM =
+        *geometry.wing.macLeadingEdgeFromDrawingDatumFrdM +
+        Vec3{-0.25 * *geometry.wing.meanAerodynamicChordM, 0.0, 0.0};
+    return positionFromCgBodyM(quarterMacFromDrawingDatumFrdM);
+}
+
 bool T6CConfig::isSimulationReady() const noexcept
 {
     return mass.flightMassKg.has_value() &&
@@ -53,6 +66,9 @@ T6CConfig makeT6CPC9MProxyConfig()
     config.drawingDatumSource =
         T6CDrawingDatumSource::PC9MModelBuildingPlanPage5;
     config.geometry.wing.meanAerodynamicChordM = wingMacM;
+    // Front view of the PC-9 M drawing labels a 7-degree outer-wing dihedral.
+    // The present MainWing kernel does not consume this parameter yet.
+    config.geometry.wing.dihedralDeg = 7.0;
     // The drawing labels the MAC leading-edge X station, but gives no
     // independently verified T-6C Y/Z location. Y=0 is the symmetry plane;
     // the Z component is a provisional drawing reference for the wing plane.

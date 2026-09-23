@@ -1,0 +1,87 @@
+schema_version: 1
+aircraft: T-6C Texan II
+component: isolated_main_wing
+status: geometry_seed_only_not_a_datcom_result
+
+# This file is a traceable starting point for DATCOM, not an executable input
+# deck. Do not transfer uncomputed coefficients into VATC_MainWingConfig.
+sources:
+  t6c_dimensions: https://defense.txtav.com/en/t-6c
+  pc9m_proxy_drawing: https://www.pilatus-aircraft.com/assets/files/Model-Building-Plans/PC-9-M-Model-Building-Plan.pdf
+  pc9m_page: 5
+  digital_datcom_user_manual: AFFDL-TR-79-3032, Volume I, WGPLNF and OPTINS input descriptions
+  datum_and_cg: reference_data/t6c/geometry_mass.yaml
+
+reference_geometry:
+  wing_area_sref_m2: 16.28              # T-6C manufacturer
+  span_blref_m: 10.20                # T-6C manufacturer
+  semi_span_m: 5.10                 # span / 2; not exposed semispan SSPNE
+  aspect_ratio: 6.390663390663391  # span^2 / area
+  mean_aerodynamic_chord_cbarr_m: 1.650 # PC-9 M page 5 proxy
+  outer_wing_dihedral_deg: 7.0       # PC-9 M front view proxy
+  rib_25_twist_magnitude_deg: 2.2   # PC-9 M section view; DATCOM sign not assigned
+
+auxiliary_drawing_datum:
+  axes: {x: aft, y: aircraft_right, z: up}
+  mac_le_x_aft_m: 0.266              # PC-9 M page 5 proxy
+  assumed_cg_x_aft_m: 0.761          # mac_le_x + 0.30 * MAC
+  assumed_cg_fraction_of_mac: 0.30  # modelling assumption, not measured
+body_frd_origin_at_cg:
+  axes: {x: forward, y: aircraft_right, z: down}
+  cg_m: {x: 0.0, y: 0.0, z: 0.0}
+  representative_mac_le_m: {x: 0.495, y: 0.0, z: 0.0}
+  representative_quarter_mac_m: {x: 0.0825, y: 0.0, z: 0.0}
+  position_note: Y=0 projects the representative chord onto the aircraft symmetry plane. Z=0 assumes the CG and wing reference level coincide; neither is a measured T-6C aerodynamic-center location.
+
+digital_datcom_input_mapping:
+  OPTINS:
+    SREF_m2: 16.28
+    CBARR_m: 1.650
+    BLREF_m: 10.20
+  WGPLNF:
+    SSPN_m: 5.10                  # nominal semispan only; confirm actual panel geometry
+    SSPNE_m: null                 # exposed semispan excluding fuselage
+    CHRDR_m: null                 # root chord at DATCOM's theoretical root station
+    CHRDTP_m: null                # tip chord; the drawing's 665 mm is not this chord
+    CHRDBP_m: null                # chord at planform breakpoint, if used
+    SSPNOP_m: null                # breakpoint semispan, if used
+    SAVSI_deg: null               # sweep at CHSTAT
+    CHSTAT: null                  # sweep reference chord fraction
+    TWISTA_deg: null              # signed root-to-tip twist; validate sign and zero station
+    DHDADI_deg: null              # panel dihedral requires DATCOM-specific interpretation
+    DHDADO_deg: null
+    wing_airfoil_designation: null
+  SYNTHS:
+    XCG_from_drawing_datum_aft_m: 0.761
+    ZCG_from_drawing_datum_up_m: null # existing -2 m FRD proxy is an assumption; validate DATCOM Z sign
+    XW_from_drawing_datum_aft_m: null # requires DATCOM wing-apex definition
+    ZW_from_drawing_datum_up_m: null
+  FLTCON:
+    mach_grid: null
+    altitude_grid_m: null
+    alpha_grid_deg: null
+    reynolds_grid: null
+
+isolated_wing_coefficients:
+  cl_alpha_section_per_rad: null
+  CL_alpha_wing_per_rad: null
+  CL0_wing: null
+  CD0_wing: null
+  Cm0_wing_at_quarter_mac: null
+  Cm_alpha_wing_at_quarter_mac_per_rad: null
+  oswald_e_for_existing_wing_kernel: null # this is not a single direct DATCOM output
+  lateral_derivatives_wing_only: null
+  flap_and_aileron_effectiveness: null
+
+moment_mapping_for_existing_kernel:
+  reference_aero_h: 0.25           # temporary geometric quarter-MAC reference
+  reference_output_h: 0.30         # assumed CG at 30% MAC
+  reference_aero_z_m: 0.0          # provisional, CG-origin BODY z positive down
+  reference_output_z_m: 0.0        # CG origin
+  note: Existing MainWing transfers its intrinsic pitching moment from aero_h to output_h; avoid applying the same r cross F twice.
+
+next_required_inputs:
+  - Digitize the PC-9 M wing leading and trailing edges by span station; reconcile planform area and MAC with the T-6C manufacturer values.
+  - Confirm the T-6C wing airfoil and representative thickness/camber or provide measured section polar data.
+  - Establish incidence, signed twist, sweep, exposed semispan, flap/aileron boundaries, and a defined Mach/Re/alpha operating grid.
+  - Run and document DATCOM wing-only outputs; map their reference area, moment origin, derivative units and scope to the MainWing kernel.

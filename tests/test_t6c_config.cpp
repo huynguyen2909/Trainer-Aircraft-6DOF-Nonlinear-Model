@@ -94,6 +94,21 @@ int main()
     requireNear(macLeFromCg->y, 0.0, 1.0e-12, "MAC LE is on symmetry plane");
     requireNear(macLeFromCg->z, 0.0, 1.0e-12,
                 "MAC LE and CG share an explicitly assumed vertical level");
+    require(!config.wingQuarterMacFromCgBodyM().has_value(),
+            "Public baseline cannot locate the representative quarter-MAC");
+    const auto quarterMacFromCg = proxy.wingQuarterMacFromCgBodyM();
+    require(quarterMacFromCg.has_value(),
+            "PC-9 M proxy must locate the representative quarter-MAC");
+    requireNear(quarterMacFromCg->x, 0.0825, 1.0e-12,
+                "Quarter-MAC must be 0.05 MAC forward of the assumed CG");
+    requireNear(quarterMacFromCg->y, 0.0, 1.0e-12,
+                "Representative quarter-MAC projects onto symmetry plane");
+    requireNear(quarterMacFromCg->z, 0.0, 1.0e-12,
+                "Quarter-MAC height shares the provisional wing level");
+    require(proxy.geometry.wing.dihedralDeg.has_value(),
+            "PC-9 M drawing gives the outer-wing dihedral");
+    requireNear(*proxy.geometry.wing.dihedralDeg, 7.0, 1.0e-12,
+                "PC-9 M outer-wing dihedral angle");
     require(!proxy.isSimulationReady(),
             "PC-9 M proxy is incomplete without mass, inertia and tail geometry");
 

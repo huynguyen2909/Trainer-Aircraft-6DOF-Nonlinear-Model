@@ -34,6 +34,11 @@ Source and derivation: `reference_data/t6c/geometry_mass.yaml`.
 This proxy supplies neither maneuver flight mass/inertia nor complete tail and
 control geometry. It remains `isSimulationReady() == false`.
 
+The wing-only DATCOM input ledger is
+`reference_data/t6c/wing_datcom_seed.yaml`; it records known reference
+dimensions, the geometric quarter-MAC lever arm, the missing planform/airfoil
+and flight-condition inputs, and still-uncomputed wing-only coefficients.
+
 ## Execution state
 
 The public baseline deliberately cannot assemble a complete aircraft model.

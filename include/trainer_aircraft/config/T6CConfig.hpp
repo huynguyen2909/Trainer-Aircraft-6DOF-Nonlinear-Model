@@ -81,6 +81,10 @@ struct T6CConfig
     [[nodiscard]] std::optional<Vec3> positionFromCgBodyM(
         const Vec3& positionFromDrawingDatumFrdM) const noexcept;
 
+    // Representative quarter-MAC point on the symmetry plane. This is a
+    // geometric reference, not a validated wing aerodynamic center.
+    [[nodiscard]] std::optional<Vec3> wingQuarterMacFromCgBodyM() const noexcept;
+
     // True only after maneuver mass properties and the geometry needed by the
     // aerodynamic components have been populated from controlled sources.
     [[nodiscard]] bool isSimulationReady() const noexcept;
