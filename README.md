@@ -53,3 +53,10 @@ Run `python tools/generate_t6c_wing_seed.py --check` to check generated data,
 or run without `--check` after changing its inputs. No Python dependency is
 needed to build or run the C++ model. The `trainer_aircraft_t6c_wing_seed_demo`
 target prints a static wing-only load snapshot using the new configuration.
+
+## Wing–Tail flow framework
+
+`WingTailFlowField` plugs into `HorizontalStabilizer` through `ILocalFlowField`.
+It supplies quasi-steady downwash and a wake dynamic-pressure ratio at each evaluation.
+Defaults are identity flow; T-6C tail/downwash seeds await geometry. See
+[geometry checklist and integration](docs/T6C_WING_TAIL_FLOW_AND_GEOMETRY.md).

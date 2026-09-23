@@ -14,6 +14,7 @@ add_library(trainer_aircraft_6dof
     src/RK4Integrator.cpp
     src/initialization/GroundStaticTrim.cpp
     src/components/stabilizers/VATC_HorizontalStabilizer.cpp
+    src/components/WingTailFlowField.cpp
     src/components/stabilizers/VATC_VerticalStabilizer.cpp
     src/components/fuselage/FuselageComponent.cpp
     src/components/fuselage/FuselageAerodynamics.cpp

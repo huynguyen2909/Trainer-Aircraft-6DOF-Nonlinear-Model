@@ -1,4 +1,6 @@
 #include "trainer_aircraft/components/ILocalFlowField.hpp"
+#include "trainer_aircraft/components/WingTailFlowField.hpp"
+#include <limits>
 #include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
 #include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
 #include "trainer_aircraft/integration/RK4Integrator.hpp"
@@ -369,12 +371,75 @@ void testAutomaticAspectRatioAndLimitOrdering()
     );
 }
 
+
+void testWingTailFlowIntegration()
+{
+    using namespace trainer_aircraft;
+    ContextFixture f;
+    auto tail = horizontalConfig();
+    tail.LiftCurveSlope = 4.0;
+    tail.IncidenceAngle = 0.01;
+    tail.PositionWrtCG[2] = -0.4;
+    f.setAirRelativeVelocity({80.0*std::cos(0.1), 0.0, 80.0*std::sin(0.1)});
+    const HorizontalStabilizer plain(tail);
+    const HorizontalStabilizer identity(tail, std::make_shared<WingTailFlowField>(WingTailFlowConfig{}));
+    requireVecNear(identity.computeLoad(f.context()).forceBodyN,
+                   plain.computeLoad(f.context()).forceBodyN, 1e-10, "Identity wake force");
+    requireVecNear(identity.computeLoad(f.context()).momentAboutCgBodyNm,
+                   plain.computeLoad(f.context()).momentAboutCgBodyNm, 1e-10, "Identity wake moment");
+    WingTailFlowConfig c;
+    c.referenceBodyAlphaRad = 0.1;
+    c.referenceDownwashRad = 0.03;
+    c.downwashGradientPerRad = 0.35;
+    c.flapDownwashGradientPerRad = 0.1;
+    c.dynamicPressureRatio = 0.9;
+    auto flow = std::make_shared<WingTailFlowField>(c);
+    const HorizontalStabilizer coupled(tail, flow);
+    const auto r = coupled.evaluateDetailed(f.context());
+    requireNear(r.flowAngleOfAttackRad, 0.07, 1e-12, "Positive downwash reduces tail alpha");
+    requireNear(r.dynamicPressurePa/f.flightCondition.dynamicPressurePa, 0.9, 1e-12, "Wake pressure ratio");
+    require(r.liftForceN < plain.evaluateDetailed(f.context()).liftForceN, "Downwash reduces tail lift");
+    const Vec3 arm{tail.PositionWrtCG[0], 0.0, tail.PositionWrtCG[2]};
+    requireVecNear(r.bodyLoad.momentAboutCgBodyNm,
+        r.intrinsicMomentAtAerodynamicCenterBodyNm + cross(arm,r.bodyLoad.forceBodyN),
+        1e-10, "Coupled tail transfers moment once");
+    f.setAirRelativeVelocity({80.0*std::cos(0.1001), 0.0, 80.0*std::sin(0.1001)});
+    const auto changed = coupled.evaluateDetailed(f.context());
+    requireNear((changed.liftCoefficient-r.liftCoefficient)/0.0001,
+        4.0*(1.0-0.35), 1e-9, "Tail lift slope includes downwash once");
+    f.controls.flapRad = 0.2;
+    requireNear(flow->evaluateDetailed(f.context()).downwashRad,
+        0.03+0.35*0.0001+0.1*0.2, 1e-12, "Flap increment uses current controls");
+    f.state.angularRateBodyRadps = {0.01,0.2,-0.03};
+    const auto turning = coupled.evaluateDetailed(f.context());
+    requireVecNear(turning.localVelocityBodyMps,
+        flow->evaluateDetailed(f.context()).wakeVelocityBodyMps + cross(f.state.angularRateBodyRadps,arm),
+        1e-12, "Rotation velocity added once, not scaled by wake");
+    f.state.angularRateBodyRadps = {};
+    c.dynamicPressureRatio = 1.0;
+    const WingTailFlowField rotationOnly(c);
+    requireNear(rotationOnly.evaluateDetailed(f.context()).wakeVelocityBodyMps.norm(),80.0,1e-12,
+        "Pure downwash preserves speed");
+    f.setAirRelativeVelocity({});
+    requireVecNear(coupled.computeLoad(f.context()).forceBodyN, {}, 1e-12, "Zero speed force");
+    requireVecNear(coupled.computeLoad(f.context()).momentAboutCgBodyNm, {}, 1e-12, "Zero speed moment");
+    for (double bad : {0.0, -1.0, std::numeric_limits<double>::quiet_NaN()})
+    {
+        c.dynamicPressureRatio = bad;
+        bool rejected = false;
+        try { const WingTailFlowField invalid(c); }
+        catch (const std::invalid_argument&) { rejected = true; }
+        require(rejected, "Reject invalid wake pressure ratio");
+    }
+}
+
 } // namespace
 
 int main()
 {
     try
     {
+        testWingTailFlowIntegration();
         testHorizontalLoadAndMomentContract();
         testHorizontalAngularRateAndIntrinsicMoment();
         testVerticalRestoringSigns();
