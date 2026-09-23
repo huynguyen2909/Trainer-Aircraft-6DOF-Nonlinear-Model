@@ -1,10 +1,12 @@
-# Reference data — not runtime configuration
+# Reference data
 
-Files in this tree preserve uploaded source values for traceability and
-regression. Stage 5 does not parse them and changing them does not alter a
-simulation result.
+Reference data are kept separate from executable component defaults.
 
-The active provisional TrainerAircraft-oriented configuration is compiled from
-`src/config/ProvisionalTrainerAircraftConfig.cpp`. Some current values are still based
-on T-6C or other surrogate sources, and that relationship is documented in
-`docs/MODEL_DATA_STATUS.md`.
+- `t6c/geometry_mass.yaml`: public T-6C mass and external geometry baseline.
+- `t6c/fuselage_source_parameters.yaml`: earlier T-6C fuselage research data;
+  review provenance and uncertainty before promoting any value.
+- `t6c/landing_gear_source_parameters.yaml`: earlier landing-gear research data;
+  not part of the active mass/geometry baseline.
+
+A value becomes active only after its source, units, reference datum, sign
+convention, configuration, and confidence have been reviewed.

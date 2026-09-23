@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(trainer_aircraft_6dof_oop_stage5_rpm_ramp_30s VERSION 5.3.0 LANGUAGES CXX)
+project(trainer_aircraft_6dof_nonlinear_model VERSION 1.0.0 LANGUAGES CXX)
 
-option(TRAINER_AIRCRAFT_BUILDTESTS "Build the TrainerAircraft unit and integration tests" ON)
-option(TRAINER_AIRCRAFT_BUILDEXAMPLES "Build the TrainerAircraft examples" ON)
+option(TRAINER_AIRCRAFT_BUILD_TESTS "Build unit and integration tests" ON)
+option(TRAINER_AIRCRAFT_BUILD_EXAMPLES "Build examples" ON)
 
 add_library(trainer_aircraft_6dof
-    src/config/ProvisionalTrainerAircraftConfig.cpp
+    src/config/T6CConfig.cpp
     src/LoadAccumulator.cpp
     src/TrainerAircraftModel.cpp
     src/RigidBody6DOF.cpp
@@ -42,26 +42,11 @@ else()
     )
 endif()
 
-if(TRAINER_AIRCRAFT_BUILDEXAMPLES)
+if(TRAINER_AIRCRAFT_BUILD_EXAMPLES)
     add_executable(trainer_aircraft_core_example
         examples/minimal_simulation.cpp
     )
     target_link_libraries(trainer_aircraft_core_example PRIVATE trainer_aircraft_6dof)
-
-    add_executable(trainer_aircraft_stabilizer_example
-        examples/stabilizer_integration.cpp
-    )
-    target_link_libraries(trainer_aircraft_stabilizer_example PRIVATE trainer_aircraft_6dof)
-
-    add_executable(trainer_aircraft_stage4_takeoff_roll
-        examples/stage4_takeoff_roll.cpp
-    )
-    target_link_libraries(trainer_aircraft_stage4_takeoff_roll PRIVATE trainer_aircraft_6dof)
-
-    add_executable(trainer_aircraft_stage5_full_aircraft_takeoff_roll
-        examples/stage5_full_aircraft_takeoff_roll.cpp
-    )
-    target_link_libraries(trainer_aircraft_stage5_full_aircraft_takeoff_roll PRIVATE trainer_aircraft_6dof)
 
     add_executable(trainer_aircraft_fuselage_reference_demo
         examples/fuselage_reference_demo.cpp
@@ -69,7 +54,7 @@ if(TRAINER_AIRCRAFT_BUILDEXAMPLES)
     target_link_libraries(trainer_aircraft_fuselage_reference_demo PRIVATE trainer_aircraft_6dof)
 endif()
 
-if(TRAINER_AIRCRAFT_BUILDTESTS)
+if(TRAINER_AIRCRAFT_BUILD_TESTS)
     enable_testing()
 
     add_executable(trainer_aircraft_core_tests
@@ -102,15 +87,10 @@ if(TRAINER_AIRCRAFT_BUILDTESTS)
     )
     target_link_libraries(trainer_aircraft_fuselage_tests PRIVATE trainer_aircraft_6dof)
 
-    add_executable(trainer_aircraft_full_aircraft_tests
-        tests/test_full_aircraft.cpp
+    add_executable(trainer_aircraft_t6c_config_tests
+        tests/test_t6c_config.cpp
     )
-    target_link_libraries(trainer_aircraft_full_aircraft_tests PRIVATE trainer_aircraft_6dof)
-
-    add_executable(trainer_aircraft_ground_static_trim_tests
-        tests/test_ground_static_trim.cpp
-    )
-    target_link_libraries(trainer_aircraft_ground_static_trim_tests PRIVATE trainer_aircraft_6dof)
+    target_link_libraries(trainer_aircraft_t6c_config_tests PRIVATE trainer_aircraft_6dof)
 
     if(MSVC)
         target_compile_options(trainer_aircraft_core_tests PRIVATE /W4 /permissive-)
@@ -119,8 +99,7 @@ if(TRAINER_AIRCRAFT_BUILDTESTS)
         target_compile_options(trainer_aircraft_landing_gear_tests PRIVATE /W4 /permissive-)
         target_compile_options(trainer_aircraft_main_wing_tests PRIVATE /W4 /permissive-)
         target_compile_options(trainer_aircraft_fuselage_tests PRIVATE /W4 /permissive-)
-        target_compile_options(trainer_aircraft_full_aircraft_tests PRIVATE /W4 /permissive-)
-        target_compile_options(trainer_aircraft_ground_static_trim_tests PRIVATE /W4 /permissive-)
+        target_compile_options(trainer_aircraft_t6c_config_tests PRIVATE /W4 /permissive-)
     else()
         target_compile_options(trainer_aircraft_core_tests PRIVATE
             -Wall -Wextra -Wpedantic -Wconversion -Wshadow
@@ -140,10 +119,7 @@ if(TRAINER_AIRCRAFT_BUILDTESTS)
         target_compile_options(trainer_aircraft_fuselage_tests PRIVATE
             -Wall -Wextra -Wpedantic -Wconversion -Wshadow
         )
-        target_compile_options(trainer_aircraft_full_aircraft_tests PRIVATE
-            -Wall -Wextra -Wpedantic -Wconversion -Wshadow
-        )
-        target_compile_options(trainer_aircraft_ground_static_trim_tests PRIVATE
+        target_compile_options(trainer_aircraft_t6c_config_tests PRIVATE
             -Wall -Wextra -Wpedantic -Wconversion -Wshadow
         )
     endif()
@@ -154,6 +130,5 @@ if(TRAINER_AIRCRAFT_BUILDTESTS)
     add_test(NAME trainer_aircraft_landing_gear_tests COMMAND trainer_aircraft_landing_gear_tests)
     add_test(NAME trainer_aircraft_main_wing_tests COMMAND trainer_aircraft_main_wing_tests)
     add_test(NAME trainer_aircraft_fuselage_tests COMMAND trainer_aircraft_fuselage_tests)
-    add_test(NAME trainer_aircraft_full_aircraft_tests COMMAND trainer_aircraft_full_aircraft_tests)
-    add_test(NAME trainer_aircraft_ground_static_trim_tests COMMAND trainer_aircraft_ground_static_trim_tests)
+    add_test(NAME trainer_aircraft_t6c_config_tests COMMAND trainer_aircraft_t6c_config_tests)
 endif()

@@ -303,9 +303,4 @@ private:
     PropellerModel model_;
 };
 
-// Every numerical value in this factory is an explicitly provisional V1
-// engineering estimate. Replace it with authoritative digitized geometry and
-// validated polar data without changing the common component contract.
-
-
 } // namespace trainer_aircraft::propeller

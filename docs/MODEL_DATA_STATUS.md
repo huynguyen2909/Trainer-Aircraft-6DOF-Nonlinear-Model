@@ -1,55 +1,31 @@
-# Model-data status: TrainerAircraft target versus surrogate sources
+# T-6C model data status
 
-The simulated aircraft target is TrainerAircraft, but Stage 5 is still a V1 integration
-model. Its software architecture and its parameter fidelity must not be
-confused.
+## Active public baseline
 
-## Active runtime source
+| Group | Available | Status |
+|---|---|---|
+| Reference mass limits | basic 2336 kg; MTOW/MLW 3765 kg; internal fuel 544 kg | Public manufacturer data; not maneuver mass |
+| Overall geometry | length 10.16 m; height 3.25 m | Public manufacturer data |
+| Wing | span 10.20 m; area 16.28 m²; aspect ratio 6.39066 derived as `b²/S` | Public manufacturer data plus transparent derivation |
+| Flight mass, CG, inertia tensor | — | Required; not publicly established |
+| Wing planform details and MAC | — | Required; not inferred from `S/b` |
+| Horizontal and vertical tail geometry/positions | — | Required |
+| Control-surface geometry/limits | — | Required |
+| Propeller installation geometry | — | Required |
 
-The executable does not read YAML. Its active data are constructed by
-`makeProvisionalTrainerAircraftConfig()` in
-`src/config/ProvisionalTrainerAircraftConfig.cpp`.
+Source: Textron Aviation Defense, T-6C product page,
+https://defense.txtav.com/en/t-6c (accessed 2026-09-23).
 
-| Subsystem | Active Stage 5 data status |
-| --- | --- |
-| Mass/inertia | provisional integration values, not validated TrainerAircraft data |
-| MainWing | TrainerAircraft-oriented geometry/defaults; lateral derivatives remain a whole-aircraft proxy |
-| Horizontal/Vertical Stabilizer | TrainerAircraft-oriented estimated configuration |
-| Fuselage | T-6C-derived geometry/tuning used explicitly as a provisional proxy |
-| Propeller | estimated TrainerAircraft installation using the documented NACA 5868-9 surrogate |
-| Landing Gear | provisional three-point geometry/stiffness used by the takeoff example |
+## Execution state
 
-`ProvisionalTrainerAircraftConfig` is named this way intentionally: it is the coherent
-software assembly point for the TrainerAircraft-target simulation, not a claim that
-all numbers have been validated for TrainerAircraft.
+The public baseline deliberately cannot assemble a complete aircraft model.
+Generic component kernels and their synthetic unit tests remain buildable. This
+prevents unverified placeholder data from contaminating DATCOM generation or FDR
+calibration.
 
-## Why T-6C-labelled files remain
+## Next acceptance gate
 
-T-6C labels now appear only where provenance requires them:
-
-- `reference_data/t6c/`: uploaded source-value snapshots, never parsed;
-- `docs/fuselage/original/`: an unchanged original-module snapshot;
-- explicit `makeT6cReference...()` factories and regression tests.
-
-Those factories remain so the uploaded Landing Gear/Fuselage results can be
-reproduced. The main Stage 5 scenario does not call them by name; it calls the
-provisional TrainerAircraft assembly factory.
-
-Deleting or relabelling those reference sources as TrainerAircraft would make the data
-lineage less trustworthy. Moving them outside runtime configuration makes
-their actual role unambiguous.
-
-## Next data-fidelity step
-
-Before performance validation, replace the fields in
-`makeProvisionalTrainerAircraftConfig()` with one consistent TrainerAircraft data set and add
-component-level regression targets. In particular:
-
-1. replace fuselage geometry/tuning and set its aerodynamic-reference-to-CG
-   position;
-2. replace MainWing whole-aircraft lateral proxy derivatives with isolated
-   wing contributions, avoiding double counting with VS/Fuselage;
-3. validate mass/inertia, landing-gear geometry/stiffness/friction and
-   propulsion settings against the same TrainerAircraft variant;
-4. only then introduce a runtime YAML/JSON schema if external configuration
-   is required.
+Before enabling complete-aircraft simulation, record controlled-source values
+for the missing items above, reconcile body axes and datum definitions, and add
+range/consistency tests. Only then map the geometry into DATCOM inputs and add
+estimated aerodynamic derivatives as a separate, traceable layer.

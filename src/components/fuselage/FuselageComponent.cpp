@@ -332,13 +332,4 @@ FuselageComponentConfig makeT6cReferenceFuselageConfig()
     return config;
 }
 
-FuselageComponentConfig makeProvisionalTrainerAircraftFuselageConfig()
-{
-    // Stage 5 does not yet contain an independently validated TrainerAircraft fuselage
-    // data set. Keep the exact uploaded proxy values but expose their role as
-    // provisional active configuration. Reference provenance remains under
-    // reference_data/t6c/ and docs/fuselage/original/.
-    return makeT6cReferenceFuselageConfig();
-}
-
 } // namespace trainer_aircraft::fuselage

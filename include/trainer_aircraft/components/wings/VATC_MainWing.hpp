@@ -1,14 +1,7 @@
 #pragma once
 
-// VATC-style OOP refactor of the original standalone TrainerAircraft wing calculator.
-//
-// Design rule:
-//   - VATC_MainWingConfig retains EVERY original Inputs variable, name, default
-//     value and lookup table from trainer_aircraft_model_direct_plots(5).cpp.
-//   - EvaluationContext supplies the live simulation state/environment/controls,
-//     consistent with VATC_HorizontalStabilizer.
-//   - WorkingData contains transient/derived quantities.
-//   - computeLoad() returns the standard VATC BodyLoad.
+// Generic main-wing aerodynamic component. Aircraft-specific values must be
+// supplied explicitly; defaults are deliberately incomplete.
 
 #include "trainer_aircraft/components/ILoadComponent.hpp"
 
@@ -28,14 +21,9 @@ struct VATC_LookupTable
 
 struct VATC_MainWingConfig
 {
-    // =====================================================================
-    // EXACT ORIGINAL INPUT BLOCKS / NAMES / DEFAULT VALUES
-    // =====================================================================
-
     struct ModelInputs
     {
-        // Data provenance label only; changing it does not isolate the wing.
-        std::string scope{"provisional_aircraft_proxy"};
+        std::string scope{"wing_only"};
 
         // "body" or "stability": axes of supplied lateral derivatives.
         std::string derivative_axes{"body"};
@@ -47,11 +35,10 @@ struct VATC_MainWingConfig
     struct FlightInputs
     {
         // rho: air density [kg/m^3]
-        // ISA estimate at 1525 m, NOT a measured NASA value.
-        double rho_kg_m3{1.0556};
+        double rho_kg_m3{1.225};
 
-        // V: true airspeed [m/s], NASA Table II condition II.
-        double speed_m_s{43.9};
+        // V: true airspeed [m/s]
+        double speed_m_s{0.0};
 
         // alpha: body angle of attack [deg]
         double alpha_deg{0.0};
@@ -71,28 +58,28 @@ struct VATC_MainWingConfig
         double aileron_deg{0.0};
 
         // delta_f: symmetric plain-flap deflection [deg]
-        double flap_deg{20.0};
+        double flap_deg{0.0};
     } controls;
 
     struct WingInputs
     {
         // S: reference wing area [m^2]
-        double area_m2{17.112};
+        double area_m2{0.0};
 
         // A or AR = b^2/S [-]
-        double aspect_ratio{6.04};
+        double aspect_ratio{0.0};
 
         // cbar: mean aerodynamic chord [m]
-        double mean_chord_m{1.74};
+        double mean_chord_m{0.0};
 
         // lambda = c_tip/c_root [-]
-        double taper{0.54};
+        double taper{0.0};
 
         // Lambda_LE: leading-edge sweep [deg]
-        double sweep_le_deg{2.996};
+        double sweep_le_deg{0.0};
 
         // i_w: wing incidence [deg]
-        double incidence_deg{2.0};
+        double incidence_deg{0.0};
     } wing;
 
     struct ReferenceInputs
@@ -116,52 +103,52 @@ struct VATC_MainWingConfig
     struct AeroInputs
     {
         // c_l_alpha: section (2D) lift slope [1/rad]
-        double cl_alpha_per_rad{6.0};
+        double cl_alpha_per_rad{0.0};
 
         // C_L_alpha: finite-wing lift slope [1/rad]
-        double CL_alpha_per_rad{5.23};
+        double CL_alpha_per_rad{0.0};
 
         // C_L0: clean lift intercept [-]
-        double CL0{0.20};
+        double CL0{0.0};
 
         // C_D0: clean zero-lift drag coefficient [-]
-        double CD0{0.030};
+        double CD0{0.0};
 
         // e: Oswald efficiency [-]
-        double oswald_e{0.80};
+        double oswald_e{0.0};
 
         // C_m0: clean pitch intercept at aero_h [-]
         double Cm0{0.0};
 
         // C_m_alpha: clean pitch slope at aero_h [1/rad]
-        double Cm_alpha_per_rad{-1.26};
+        double Cm_alpha_per_rad{0.0};
     } aero;
 
     struct FlapInputs
     {
         // eta_i = 2|y_i|/b: inboard flap semispan fraction [-]
-        double eta_in{0.13};
+        double eta_in{0.0};
 
         // eta_o = 2|y_o|/b: outboard flap semispan fraction [-]
-        double eta_out{0.65};
+        double eta_out{0.0};
 
         // cf/c: flap/retracted local chord ratio [-]
-        double chord_ratio{0.21};
+        double chord_ratio{0.0};
 
         // t/c: representative thickness ratio [-]
-        double thickness_ratio{0.10};
+        double thickness_ratio{0.0};
 
         // Effective section flap lift derivative [1/rad]
-        double section_effectiveness_per_rad{3.65};
+        double section_effectiveness_per_rad{0.0};
 
         // R_actual: finite-wing / section effectiveness ratio [-]
-        double effectiveness_ratio_actual{1.10};
+        double effectiveness_ratio_actual{0.0};
 
         // R_ref: same ratio for Roskam reference wing [-]
-        double effectiveness_ratio_reference{1.10};
+        double effectiveness_ratio_reference{0.0};
 
         // K: extra flap induced-drag factor [-]
-        double induced_factor_K{0.25};
+        double induced_factor_K{0.0};
 
         // K_int: profile-drag interference multiplier [-]
         double interference_factor{0.0};
@@ -209,22 +196,22 @@ struct VATC_MainWingConfig
     struct LateralInputs
     {
         // d(CY)/d(beta), d(CY)/d(p_hat), d(CY)/d(r_hat), d(CY)/d(delta_a)
-        double CY_beta{-0.35};
-        double CY_p{-0.30};
-        double CY_r{0.50};
+        double CY_beta{0.0};
+        double CY_p{0.0};
+        double CY_r{0.0};
         double CY_da{0.0};
 
         // d(Cl)/d(beta), d(Cl)/d(p_hat), d(Cl)/d(r_hat), d(Cl)/d(delta_a)
-        double Cl_beta{-0.06};
-        double Cl_p{-0.45};
-        double Cl_r{0.04};
-        double Cl_da{0.15};
+        double Cl_beta{0.0};
+        double Cl_p{0.0};
+        double Cl_r{0.0};
+        double Cl_da{0.0};
 
         // d(Cn)/d(beta), d(Cn)/d(p_hat), d(Cn)/d(r_hat), d(Cn)/d(delta_a)
-        double Cn_beta{0.049};
-        double Cn_p{-0.024};
-        double Cn_r{-0.082};
-        double Cn_da{-0.005};
+        double Cn_beta{0.0};
+        double Cn_p{0.0};
+        double Cn_r{0.0};
+        double Cn_da{0.0};
     } lateral;
 };
 

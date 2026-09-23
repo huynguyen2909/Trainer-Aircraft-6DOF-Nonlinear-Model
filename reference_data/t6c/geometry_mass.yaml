@@ -1,0 +1,69 @@
+schema_version: 1
+aircraft: T-6C Texan II
+status: public_baseline_incomplete
+accessed_utc: 2026-09-23
+
+sources:
+  textron_t6c_product_page:
+    organization: Textron Aviation Defense
+    title: T-6C Texan II
+    url: https://defense.txtav.com/en/t-6c
+    source_class: manufacturer_public_webpage
+
+mass_reference:
+  note: Public reference values are not a substitute for maneuver mass properties.
+  basic_mass:
+    value: 2336.0
+    unit: kg
+    source: textron_t6c_product_page
+  maximum_takeoff_mass:
+    value: 3765.0
+    unit: kg
+    source: textron_t6c_product_page
+  maximum_landing_mass:
+    value: 3765.0
+    unit: kg
+    source: textron_t6c_product_page
+  internal_fuel_capacity_mass:
+    value: 544.0
+    unit: kg
+    source: textron_t6c_product_page
+  flight_mass: null
+  cg_from_defined_datum_body_m: null
+  inertia_about_cg_body_kg_m2: null
+
+external_geometry:
+  overall_length:
+    value: 10.16
+    unit: m
+    source: textron_t6c_product_page
+  overall_height:
+    value: 3.25
+    unit: m
+    source: textron_t6c_product_page
+  wing_span:
+    value: 10.20
+    unit: m
+    source: textron_t6c_product_page
+  wing_reference_area:
+    value: 16.28
+    unit: m2
+    source: textron_t6c_product_page
+  wing_aspect_ratio:
+    value: 6.390663390663391
+    unit: dimensionless
+    derivation: wing_span_squared_divided_by_wing_reference_area
+
+unresolved_geometry:
+  wing_mean_aerodynamic_chord_m: null
+  wing_root_chord_m: null
+  wing_tip_chord_m: null
+  wing_taper_ratio: null
+  wing_leading_edge_sweep_deg: null
+  wing_incidence_deg: null
+  wing_dihedral_deg: null
+  horizontal_tail: null
+  vertical_tail: null
+  control_surfaces: null
+  component_positions_from_defined_datum_body_m: null
+  propeller_geometry: null

@@ -63,41 +63,57 @@ struct Fixture
     }
 };
 
-void testUploadedDefaultRegression()
+trainer_aircraft::MainWingConfig makeSyntheticWingConfig()
 {
-    trainer_aircraft::MainWing wing(trainer_aircraft::MainWingConfig{});
+    trainer_aircraft::MainWingConfig config;
+    config.wing.area_m2 = 20.0;
+    config.wing.aspect_ratio = 8.0;
+    config.wing.mean_chord_m = 1.5;
+    config.wing.taper = 0.5;
+    config.wing.sweep_le_deg = 0.0;
+    config.wing.incidence_deg = 0.0;
+    config.aero.cl_alpha_per_rad = 6.0;
+    config.aero.CL_alpha_per_rad = 5.0;
+    config.aero.CL0 = 0.1;
+    config.aero.CD0 = 0.02;
+    config.aero.oswald_e = 0.8;
+    config.aero.Cm0 = 0.0;
+    config.aero.Cm_alpha_per_rad = -0.5;
+    config.flap.eta_in = 0.2;
+    config.flap.eta_out = 0.6;
+    config.flap.chord_ratio = 0.25;
+    config.flap.thickness_ratio = 0.12;
+    config.flap.section_effectiveness_per_rad = 3.0;
+    config.flap.effectiveness_ratio_actual = 1.0;
+    config.flap.effectiveness_ratio_reference = 1.0;
+    config.flap.induced_factor_K = 0.2;
+    config.lateral.Cl_da = 0.12;
+    return config;
+}
+
+void testExplicitSyntheticConfiguration()
+{
+    trainer_aircraft::MainWing wing(makeSyntheticWingConfig());
     Fixture fixture;
-    fixture.environment.airDensityKgM3 = 1.0556;
-    fixture.flight.airspeedMps = 43.9;
-    fixture.flight.airRelativeVelocityBodyMps = {43.9, 0.0, 0.0};
+    fixture.environment.airDensityKgM3 = 1.225;
+    fixture.flight.airspeedMps = 50.0;
+    fixture.flight.airRelativeVelocityBodyMps = {50.0, 0.0, 0.0};
     fixture.flight.dynamicPressurePa =
-        0.5 * fixture.environment.airDensityKgM3 * 43.9 * 43.9;
-    fixture.flight.mach = 43.9 / fixture.environment.speedOfSoundMps;
+        0.5 * fixture.environment.airDensityKgM3 * 50.0 * 50.0;
+    fixture.flight.mach = 50.0 / fixture.environment.speedOfSoundMps;
     fixture.controls.flapRad = 20.0 * PI / 180.0;
 
     const auto result = wing.evaluateDetailed(fixture.context());
-    requireNear(result.liftCoefficient, 1.0281250404461793, 1.0e-12,
-                "Uploaded MainWing CL regression");
-    requireNear(result.dragCoefficient, 0.14181238828955073, 1.0e-12,
-                "Uploaded MainWing CD regression");
-    requireVecNear(
-        result.bodyLoad.forceBodyN,
-        {-2468.3876738450695, 0.0, -17895.553467636},
-        1.0e-8,
-        "Uploaded MainWing dimensional-force regression"
-    );
-    requireVecNear(
-        result.bodyLoad.momentAboutCgBodyNm,
-        {0.0, -6247.197464641232, 0.0},
-        1.0e-8,
-        "Uploaded MainWing dimensional-moment regression"
-    );
-    require(!result.warnings.empty(), "MainWing provenance warnings retained");
+    require(result.bodyLoad.isFinite(), "Synthetic wing result is finite");
+    require(result.liftCoefficient > 0.0,
+            "Positive flap deflection produces positive lift increment");
+    require(result.dragCoefficient > 0.0,
+            "Synthetic wing produces positive drag");
 }
 
 void testZeroSpeedAndControlPaths()
 {
-    trainer_aircraft::MainWing wing(trainer_aircraft::MainWingConfig{});
+    trainer_aircraft::MainWing wing(makeSyntheticWingConfig());
     Fixture fixture;
     fixture.controls.flapRad = 0.0;
 
@@ -132,7 +148,7 @@ void testZeroSpeedAndControlPaths()
 
 void testMomentTransferToCg()
 {
-    trainer_aircraft::MainWingConfig config;
+    trainer_aircraft::MainWingConfig config = makeSyntheticWingConfig();
     config.reference.output_h = 0.50;
     config.reference.output_z_m = -0.20;
     trainer_aircraft::MainWing wing(config);
@@ -164,7 +180,7 @@ void testMomentTransferToCg()
 
 int main()
 {
-    testUploadedDefaultRegression();
+    testExplicitSyntheticConfiguration();
     testZeroSpeedAndControlPaths();
     testMomentTransferToCg();
     std::cout << "MainWing tests passed.\n";

@@ -166,11 +166,10 @@ void validateConfig(const VATC_MainWingConfig& config)
         );
     }
 
-    if (config.model.scope != "provisional_aircraft_proxy" &&
-        config.model.scope != "wing_only")
+    if (config.model.scope != "wing_only")
     {
         throw std::invalid_argument(
-            "MainWing scope must be 'provisional_aircraft_proxy' or 'wing_only'."
+            "MainWing scope must be 'wing_only'."
         );
     }
 
@@ -276,78 +275,59 @@ void validateContext(const EvaluationContext& context)
 
 struct VATC_MainWing::WorkingData
 {
-    // ---------------------------------------------------------------------
-    // Default runtime condition copied from trainer_aircraft_model_direct_plots(5).cpp
-    // rho = 1.0556 kg/m^3, V = 43.9 m/s,
-    // alpha = beta = p = q = r = delta_a = 0,
-    // delta_f = 20 deg.
-    // These values are subsequently overwritten by readRuntimeInputs(context)
-    // during normal VATC component evaluation.
-    // ---------------------------------------------------------------------
-    double airDensityKgM3{1.0556};
-    double airspeedMps{43.9};
+    double airDensityKgM3{0.0};
+    double airspeedMps{0.0};
     double angleOfAttackRad{0.0};
     double sideSlipRad{0.0};
     double rollRateRadps{0.0};
     double pitchRateRadps{0.0};
     double yawRateRadps{0.0};
     double aileronDeflectionRad{0.0};
-    double flapDeflectionRad{0.3490658503988659};  // 20 deg
-    double flapDeflectionDeg{20.0};
+    double flapDeflectionRad{0.0};
+    double flapDeflectionDeg{0.0};
 
-    // Geometry-derived values for the old default TrainerAircraft input set.
-    // b = sqrt(S*AR)
-    // sweep_c/4 = atan(tan(sweep_LE) - (1-lambda)/(AR*(1+lambda)))
-    // S_wf from the original trapezoidal-wing expression
-    // alpha_w = alpha + i_w
-    double wingSpanM{10.166438904552567};
-    double quarterChordSweepAngleRad{0.0028839092258502973};
-    double flappedWingAreaM2{9.482981485714285};
-    double wingAngleOfAttackRad{0.03490658503988659};
+    double wingSpanM{0.0};
+    double quarterChordSweepAngleRad{0.0};
+    double flappedWingAreaM2{0.0};
+    double wingAngleOfAttackRad{0.0};
+    double dynamicPressurePa{0.0};
 
-    // qbar = 0.5*rho*V^2
-    double dynamicPressurePa{1017.181438};
+    double flapNonlinearityFactor{0.0};
+    double profileDragTableValue{0.0};
+    double liftSpanFactor{0.0};
+    double pitchSpanFactor{0.0};
+    double sweepPitchFactor{0.0};
+    double projectedChordRatio{0.0};
+    double flapChordToProjectedChordRatio{0.0};
+    double thicknessToProjectedChordRatio{0.0};
+    double pitchMomentRatio{0.0};
 
-    // Flap lookup/geometry values at delta_f = 20 deg and eta = 0.13..0.65.
-    double flapNonlinearityFactor{0.88};
-    double profileDragTableValue{0.02911111111111111};
-    double liftSpanFactor{0.6004999999999999};
-    double pitchSpanFactor{0.61875};
-    double sweepPitchFactor{0.020649999999999995};
-    double projectedChordRatio{0.9873354503650408};
-    double flapChordToProjectedChordRatio{0.2126936695348659};
-    double thicknessToProjectedChordRatio{0.10128269977850758};
-    double pitchMomentRatio{-0.3013992918418697};
+    double sectionSlopeParameter{0.0};
+    double referenceLiftCurveSlope{0.0};
 
-    // Roskam reference-wing calculation.
-    double sectionSlopeParameter{0.954929658551372};
-    double referenceLiftCurveSlope{4.386771735382717};
+    double sectionFlapLiftCoefficientIncrement{0.0};
+    double flapLiftCoefficientIncrement{0.0};
+    double referenceFlapLiftCoefficientIncrement{0.0};
+    double cleanLiftCoefficient{0.0};
+    double liftCoefficient{0.0};
 
-    // Lift.
-    double sectionFlapLiftCoefficientIncrement{1.1211995114811573};
-    double flapLiftCoefficientIncrement{0.6455636006875723};
-    double referenceFlapLiftCoefficientIncrement{0.9017151598932495};
-    double cleanLiftCoefficient{0.3825614397586069};
-    double liftCoefficient{1.0281250404461793};
-
-    // Clean pitch and drag.
-    double cleanPitchMomentCoefficient{-0.0439822971502571};
-    double profileDragCoefficientIncrement{0.016132478945144947};
-    double flapInducedDragCoefficientIncrement{0.026046914342705396};
+    double cleanPitchMomentCoefficient{0.0};
+    double profileDragCoefficientIncrement{0.0};
+    double flapInducedDragCoefficientIncrement{0.0};
     double interferenceDragCoefficientIncrement{0.0};
-    double flapDragCoefficientIncrement{0.04217939328785034};
-    double dragCoefficient{0.14181238828955073};
+    double flapDragCoefficientIncrement{0.0};
+    double dragCoefficient{0.0};
 
     // Roskam pitch terms.
     double pitchMomentTerm1{0.0};
-    double pitchMomentTerm2{0.0002162309703057396};
-    double pitchMomentTerm3{-0.16392918211822846};
-    double pitchMomentTerm4{0.0007399645172175379};
-    double pitchMomentTerm5{0.0006849423986899577};
-    double literalFlapPitchMomentCoefficientIncrement{-0.16228804423201523};
+    double pitchMomentTerm2{0.0};
+    double pitchMomentTerm3{0.0};
+    double pitchMomentTerm4{0.0};
+    double pitchMomentTerm5{0.0};
+    double literalFlapPitchMomentCoefficientIncrement{0.0};
     double zeroFlapPitchMomentBaseline{0.0};
-    double flapPitchMomentCoefficientIncrement{-0.16228804423201523};
-    double pitchMomentCoefficientAtAerodynamicReference{-0.20627034138227235};
+    double flapPitchMomentCoefficientIncrement{0.0};
+    double pitchMomentCoefficientAtAerodynamicReference{0.0};
 
     // Lateral-rate transformation.
     double derivativeFrameRollRateRadps{0.0};
@@ -362,39 +342,22 @@ struct VATC_MainWing::WorkingData
     double yawMomentCoefficientAtAerodynamicReference{0.0};
 
     // Longitudinal BODY coefficients.
-    double axialForceCoefficient{-0.14181238828955073};
-    double normalForceCoefficient{-1.0281250404461793};
+    double axialForceCoefficient{0.0};
+    double normalForceCoefficient{0.0};
 
-    // Reference transfer for the old defaults: aero_h = output_h = 0.25,
-    // aero_z = output_z = 0, therefore dx = dz = 0.
     double momentTransferDxM{0.0};
     double momentTransferDzM{0.0};
 
     // Final BODY moment coefficients about the configured CG/output reference.
     double rollMomentCoefficient{0.0};
-    double pitchMomentCoefficient{-0.20627034138227235};
+    double pitchMomentCoefficient{0.0};
     double yawMomentCoefficient{0.0};
 
-    double upwardNormalForceCoefficient{1.0281250404461793};
+    double upwardNormalForceCoefficient{0.0};
 
-    // Dimensional loads for the old default condition.
-    Vec3 forceBodyN{
-        -2468.3876738450695,
-        0.0,
-        -17895.553467636
-    };
-
-    Vec3 intrinsicMomentAtAerodynamicReferenceBodyNm{
-        0.0,
-        -6247.197464641232,
-        0.0
-    };
-
-    Vec3 momentAboutCgBodyNm{
-        0.0,
-        -6247.197464641232,
-        0.0
-    };
+    Vec3 forceBodyN{};
+    Vec3 intrinsicMomentAtAerodynamicReferenceBodyNm{};
+    Vec3 momentAboutCgBodyNm{};
 };
 
 VATC_MainWing::VATC_MainWing(const VATC_MainWingConfig& config)
@@ -526,14 +489,6 @@ MainWingEvaluation VATC_MainWing::evaluateDetailed(
         "Roskam table samples are coarse estimates for the supplied geometry; "
         "retabulate after geometry changes."
     );
-
-    if (config_.model.scope == "provisional_aircraft_proxy")
-    {
-        result.warnings.push_back(
-            "NASA whole-aircraft initial derivatives used as proxy: outputs "
-            "are NOT validated isolated-wing coefficients."
-        );
-    }
 
     if (std::abs(data.angleOfAttackRad) > 10.0 * PI / 180.0 ||
         std::abs(data.sideSlipRad) > 5.0 * PI / 180.0)

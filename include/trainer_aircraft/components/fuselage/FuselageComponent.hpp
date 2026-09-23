@@ -74,10 +74,4 @@ makeNicolosiReferenceFuselageGeometry();
 [[nodiscard]] FuselageTuning makeT6cReferenceFuselageTuning();
 [[nodiscard]] FuselageComponentConfig makeT6cReferenceFuselageConfig();
 
-// Active Stage 5 estimate. It currently inherits the uploaded T-6C proxy
-// geometry/tuning; the explicit name prevents the simulation driver from
-// presenting that reference source as validated TrainerAircraft data.
-[[nodiscard]] FuselageComponentConfig
-makeProvisionalTrainerAircraftFuselageConfig();
-
 } // namespace trainer_aircraft::fuselage

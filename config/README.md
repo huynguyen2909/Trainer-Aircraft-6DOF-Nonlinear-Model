@@ -1,22 +1,17 @@
-# Runtime configuration in Stage 5
+# Aircraft configuration
 
-No YAML file is parsed at runtime in this release. The active takeoff-roll
-configuration is assembled as strongly typed C++ data by:
+The active data interface is:
 
 ```text
-include/trainer_aircraft/config/ProvisionalTrainerAircraftConfig.hpp
-src/config/ProvisionalTrainerAircraftConfig.cpp
+include/trainer_aircraft/config/T6CConfig.hpp
+src/config/T6CConfig.cpp
 ```
 
-`makeProvisionalTrainerAircraftConfig()` is the single entry point used by the Stage 5
-simulation and full-aircraft integration test. It gathers mass/inertia,
-MainWing, HS, VS, Fuselage, Propeller and Landing Gear parameters.
+`makeT6CPublicBaselineConfig()` provides only verified public manufacturer
+values. `T6CConfig::isSimulationReady()` intentionally returns `false` until
+flight mass, CG, inertia, wing MAC, and empennage geometry are supplied.
 
-This directory intentionally contains no apparent aircraft YAML configuration
-until a real parser/schema and a validated TrainerAircraft data set are implemented.
-Placing an unparsed YAML here would make it too easy to assume that editing the
-file changes the simulation.
-
-Historical T-6C input snapshots have been moved to `reference_data/t6c/`.
-They are provenance/regression material only and are not opened by the
-executable.
+Do not assemble a flight model by replacing missing values with generic or
+historical-aircraft defaults. Add each value to the YAML source ledger first,
+including its coordinate datum and uncertainty, then expose it in the typed
+configuration.
