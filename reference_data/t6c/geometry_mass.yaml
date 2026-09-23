@@ -9,6 +9,11 @@ sources:
     title: T-6C Texan II
     url: https://defense.txtav.com/en/t-6c
     source_class: manufacturer_public_webpage
+  pilatus_pc9m_model_building_plan:
+    organization: Pilatus Aircraft Ltd
+    title: PC-9 M Model Building Plan, drawing on PDF page 5
+    url: https://www.pilatus-aircraft.com/assets/files/Model-Building-Plans/PC-9-M-Model-Building-Plan.pdf
+    source_class: manufacturer_model_building_drawing_pc9m_proxy
 
 mass_reference:
   note: Public reference values are not a substitute for maneuver mass properties.
@@ -67,3 +72,30 @@ unresolved_geometry:
   control_surfaces: null
   component_positions_from_defined_datum_body_m: null
   propeller_geometry: null
+
+# Separate from the Textron public baseline: a preliminary coordinate datum,
+# wing MAC and CG for initial T-6C DATCOM estimates only. The Pilatus drawing
+# says it should only be used for model aircraft; no values in this block are
+# certified measurements of the T-6C or its maneuver-specific mass properties.
+provisional_pc9m_proxy:
+  source: pilatus_pc9m_model_building_plan
+  drawing_datum:
+    description: Intersection of drawing X=0 wing station, Y=0 aircraft symmetry plane and Z=0 drawing reference line
+    axes: {x: aft, y: aircraft_right, z: up}
+    unit: m
+  model_body_frame:
+    axes: {x: forward, y: aircraft_right, z: down}
+    conversion_from_drawing: {x_body: '-X_drawing', y_body: '+Y_drawing', z_body: '-Z_drawing'}
+  wing_mac:
+    length_m: 1.650
+    leading_edge_x_aft_of_drawing_datum_m: 0.266
+    leading_edge_x_body_m: -0.266
+    source: pilatus_pc9m_model_building_plan
+    note: Z at the MAC leading edge is provisionally placed on the 2.000 m drawing reference plane; its T-6C installation height is unverified.
+  estimated_cg:
+    fraction_of_mac_from_le: 0.30
+    x_aft_of_drawing_datum_m: 0.761
+    from_datum_body_m: {x: -0.761, y: 0.0, z: -2.0}
+    source: assumed_30_percent_pc9m_mac
+    note: Y=0 assumes lateral symmetry; Z=2.000 m above the drawing reference line assumes the CG lies in the wing reference plane. Neither CG nor MAC Z is measured on a T-6C.
+  intended_factory: makeT6CPC9MProxyConfig

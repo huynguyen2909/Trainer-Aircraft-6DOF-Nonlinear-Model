@@ -29,6 +29,9 @@ struct T6CWingGeometry
     double aspectRatio{10.20 * 10.20 / 16.28};
 
     std::optional<double> meanAerodynamicChordM{};
+    // BODY FRD vector from the PC-9 M drawing datum to the wing MAC leading
+    // edge. Populated only in the explicitly named PC-9 M proxy configuration.
+    std::optional<Vec3> macLeadingEdgeFromDatumBodyM{};
     std::optional<double> rootChordM{};
     std::optional<double> tipChordM{};
     std::optional<double> taperRatio{};
@@ -58,8 +61,16 @@ struct T6CAirframeGeometry
     T6CTailGeometry tail{};
 };
 
+enum class T6CDatumSource
+{
+    PC9MModelBuildingPlanPage5
+};
+
 struct T6CConfig
 {
+    // When populated, every position-from-datum Vec3 is expressed in BODY
+    // FRD relative to this explicitly recorded geometric origin.
+    std::optional<T6CDatumSource> datumSource{};
     T6CMassReference mass{};
     T6CAirframeGeometry geometry{};
 
@@ -69,5 +80,10 @@ struct T6CConfig
 };
 
 [[nodiscard]] T6CConfig makeT6CPublicBaselineConfig();
+
+// Preliminary T-6C geometry and CG from Pilatus' PC-9 M model-building plan,
+// page 5. The public T-6C dimensions remain sourced from Textron; these proxy
+// values are not a measured T-6C mass distribution or a simulation-ready model.
+[[nodiscard]] T6CConfig makeT6CPC9MProxyConfig();
 
 } // namespace trainer_aircraft
