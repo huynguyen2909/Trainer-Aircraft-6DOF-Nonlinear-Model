@@ -6,6 +6,7 @@
 #include "trainer_aircraft/components/ILoadComponent.hpp"
 
 #include <string>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -57,8 +58,11 @@ struct VATC_MainWingConfig
         // delta_a: aileron deflection [deg]
         double aileron_deg{0.0};
 
-        // delta_f: symmetric plain-flap deflection [deg]
+        // delta_f: symmetric flap deflection [deg], model selected below.
         double flap_deg{0.0};
+
+        // Effective differential angle (delta_left - delta_right)/2.
+        double aileron_limit_deg{180.0};
     } controls;
 
     struct WingInputs
@@ -80,6 +84,10 @@ struct VATC_MainWingConfig
 
         // i_w: wing incidence [deg]
         double incidence_deg{0.0};
+
+        // Explicit panel-derived values; unset retains the legacy trapezoid.
+        std::optional<double> quarter_chord_sweep_deg{};
+        std::optional<double> flapped_area_m2{};
     } wing;
 
     struct ReferenceInputs
@@ -122,7 +130,24 @@ struct VATC_MainWingConfig
 
         // C_m_alpha: clean pitch slope at aero_h [1/rad]
         double Cm_alpha_per_rad{0.0};
+
+        // Derivatives with respect to q_hat = q*cbar/(2*V).
+        // Rates refer to rotation about CG; moment is about aero_h.
+        double CL_q{0.0};
+        double Cm_q{0.0};
     } aero;
+
+    struct TabulatedFlapInputs
+    {
+        // Aircraft-specific increments, e.g. a split flap. Does not shorten
+        // the wing chord or use the legacy plain-flap/Roskam lookup tables.
+        bool enabled{false};
+        VATC_LookupTable delta_CL{};
+        VATC_LookupTable delta_CD_profile{};
+        VATC_LookupTable delta_Cm_at_aero_reference{};
+        // Extra nonuniform-loading drag, beyond the polar of total CL.
+        double extra_induced_factor{0.0};
+    } tabulated_flap;
 
     struct FlapInputs
     {

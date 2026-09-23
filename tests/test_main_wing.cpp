@@ -1,4 +1,5 @@
 #include "trainer_aircraft/components/wings/VATC_MainWing.hpp"
+#include "trainer_aircraft/config/T6CWingSeed.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -176,6 +177,71 @@ void testMomentTransferToCg()
                    "MainWing transfers r cross F exactly once");
 }
 
+void testT6CSeedLoadsAndPitchRate()
+{
+    const auto config = trainer_aircraft::makeT6CWingCalibrationSeed();
+    trainer_aircraft::MainWing wing(config);
+    Fixture f;
+    f.flight.airspeedMps = config.flight.speed_m_s;
+    f.flight.angleOfAttackRad = config.flight.alpha_deg * PI / 180.0;
+    f.environment.airDensityKgM3 = config.flight.rho_kg_m3;
+    const auto steady = wing.evaluateDetailed(f.context());
+    require(steady.forceBodyN.z < 0.0 && steady.dragCoefficient > 0.0,
+            "Seed produces upward lift and positive drag");
+    requireNear(steady.liftCoefficient, 0.339842819279, 1.0e-8,
+                "Seed snapshot CL matches independently generated report");
+    requireNear(steady.flapLiftCoefficientIncrement, 0.0, 0.0,
+                "Split flap zero baseline");
+    const trainer_aircraft::Vec3 arm{(config.reference.output_h-config.reference.aero_h)*
+        config.wing.mean_chord_m, 0.0, 0.0};
+    requireVecNear(steady.momentAboutCgBodyNm,
+                   steady.intrinsicMomentAtAerodynamicReferenceBodyNm +
+                   trainer_aircraft::cross(arm, steady.forceBodyN), 1.0e-8,
+                   "Seed transfers to CG once");
+
+    constexpr double dq = 1.0e-4;
+    f.state.angularRateBodyRadps.y = dq;
+    const auto plus = wing.evaluateDetailed(f.context());
+    f.state.angularRateBodyRadps.y = -dq;
+    const auto minus = wing.evaluateDetailed(f.context());
+    const double dhat = dq*config.wing.mean_chord_m/(2*f.flight.airspeedMps);
+    requireNear((plus.liftCoefficient-minus.liftCoefficient)/(2*dhat),
+                config.aero.CL_q, 1.0e-8, "Pitch-rate lift derivative is active");
+    requireNear((plus.pitchMomentCoefficientAtAerodynamicReference-
+                 minus.pitchMomentCoefficientAtAerodynamicReference)/(2*dhat),
+                config.aero.Cm_q, 1.0e-8, "Pitch-rate intrinsic damping is active");
+    require(plus.momentAboutCgBodyNm.y < minus.momentAboutCgBodyNm.y,
+            "Positive pitch rate adds damping about CG");
+
+    f.state.angularRateBodyRadps = {0.1, 0.0, 0.0};
+    require(wing.evaluateDetailed(f.context()).momentAboutCgBodyNm.x < 0.0,
+            "Positive roll rate has wing roll damping");
+    f.state.angularRateBodyRadps = {};
+    f.controls.aileronRad = 5.0*PI/180.0;
+    const auto right = wing.evaluateDetailed(f.context());
+    f.controls.aileronRad *= -1;
+    const auto left = wing.evaluateDetailed(f.context());
+    require(right.momentAboutCgBodyNm.x > 0.0 && right.momentAboutCgBodyNm.z < 0.0,
+            "Positive effective aileron produces right roll and adverse yaw");
+    requireNear(right.momentAboutCgBodyNm.x, -left.momentAboutCgBodyNm.x, 1.0e-8,
+                "Aileron antisymmetry");
+    f.controls.aileronRad = 0.0;
+    f.controls.flapRad = 60.0*PI/180.0;
+    const auto flap = wing.evaluateDetailed(f.context());
+    require(flap.bodyLoad.isFinite() && flap.liftCoefficient > steady.liftCoefficient &&
+            flap.dragCoefficient > steady.dragCoefficient &&
+            flap.intrinsicMomentAtAerodynamicReferenceBodyNm.y <
+                steady.intrinsicMomentAtAerodynamicReferenceBodyNm.y,
+            "Split flap table extends to 60 deg with lift, drag and nose-down increment");
+    requireNear(flap.projectedChordRatio, 1.0, 0.0,
+                "Split flap does not shorten wing chord");
+    f.flight.airspeedMps = 0.0;
+    f.state.angularRateBodyRadps = {0.1, 0.2, 0.3};
+    const auto stopped = wing.evaluateDetailed(f.context());
+    requireVecNear(stopped.forceBodyN, {}, 0.0, "Zero-speed seed force remains finite zero");
+    requireVecNear(stopped.momentAboutCgBodyNm, {}, 0.0, "Zero-speed seed moment remains finite zero");
+}
+
 } // namespace
 
 int main()
@@ -183,6 +249,7 @@ int main()
     testExplicitSyntheticConfiguration();
     testZeroSpeedAndControlPaths();
     testMomentTransferToCg();
+    testT6CSeedLoadsAndPitchRate();
     std::cout << "MainWing tests passed.\n";
     return 0;
 }

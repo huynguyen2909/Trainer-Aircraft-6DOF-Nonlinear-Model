@@ -7,6 +7,7 @@ option(TRAINER_AIRCRAFT_BUILD_EXAMPLES "Build examples" ON)
 
 add_library(trainer_aircraft_6dof
     src/config/T6CConfig.cpp
+    src/config/T6CWingSeed.cpp
     src/LoadAccumulator.cpp
     src/TrainerAircraftModel.cpp
     src/RigidBody6DOF.cpp
@@ -43,6 +44,8 @@ else()
 endif()
 
 if(TRAINER_AIRCRAFT_BUILD_EXAMPLES)
+    add_executable(trainer_aircraft_t6c_wing_seed_demo examples/t6c_wing_seed_demo.cpp)
+    target_link_libraries(trainer_aircraft_t6c_wing_seed_demo PRIVATE trainer_aircraft_6dof)
     add_executable(trainer_aircraft_core_example
         examples/minimal_simulation.cpp
     )

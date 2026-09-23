@@ -32,3 +32,24 @@ On a single-config generator, `-C Release` is harmless but optional.
   to represent T-6C performance.
 
 See `docs/MODEL_DATA_STATUS.md` before interpreting simulation output.
+
+## Provisional T-6C / PC-9M main-wing seed
+
+`makeT6CWingCalibrationSeed()` in `trainer_aircraft/config/T6CWingSeed.hpp`
+provides a runnable wing-only seed at Mach 0.25383. It combines documented DATCOM
+equations with explicitly labelled engineering estimates for missing inputs.
+It is not an optimized model or a complete T-6C airframe configuration.
+
+```cpp
+#include "trainer_aircraft/config/T6CWingSeed.hpp"
+// model is an existing TrainerAircraftModel with flight-specific mass/inertia.
+model.addLoadComponent(std::make_unique<trainer_aircraft::MainWing>(
+    trainer_aircraft::makeT6CWingCalibrationSeed()));
+```
+
+The detailed Vietnamese input/formula/output/reference tables are in
+[`docs/T6C_MAIN_WING_DATCOM_SEED.md`](docs/T6C_MAIN_WING_DATCOM_SEED.md).
+Run `python tools/generate_t6c_wing_seed.py --check` to check generated data,
+or run without `--check` after changing its inputs. No Python dependency is
+needed to build or run the C++ model. The `trainer_aircraft_t6c_wing_seed_demo`
+target prints a static wing-only load snapshot using the new configuration.

@@ -34,17 +34,28 @@ Source and derivation: `reference_data/t6c/geometry_mass.yaml`.
 This proxy supplies neither maneuver flight mass/inertia nor complete tail and
 control geometry. It remains `isSimulationReady() == false`.
 
-The wing-only DATCOM input ledger is
-`reference_data/t6c/wing_datcom_seed.yaml`; it records known reference
-dimensions, the geometric quarter-MAC lever arm, the missing planform/airfoil
-and flight-condition inputs, and still-uncomputed wing-only coefficients.
+The wing-only seed is now executable through `makeT6CWingCalibrationSeed()`.
+`reference_data/t6c/wing_datcom_seed.yaml` records every input and its provenance,
+DATCOM-derived quantities, explicit engineering proxies, and the generated
+runtime configuration. It does not claim measured coefficients or an FDR fit.
+The public baseline above and `makeT6CPC9MProxyConfig()` still preserve their
+original source-backed dimensions; the separate calibration wing uses a
+10.124 m PC-9M span and an area-normalized planform.
+
+See [the full seed tables](T6C_MAIN_WING_DATCOM_SEED.md) for numerical values,
+DATCOM page references, geometry closure, CG moment transfer, split-flap
+assumptions, and frozen local lateral derivatives. The generator contains no
+raw FDR records and requires only Python's standard library. Pitch-rate lift
+and damping are now available in MainWing; a separate tabulated-increment path
+represents the provisional split flap without applying plain-flap chord
+shortening.
 
 ## Execution state
 
 The public baseline deliberately cannot assemble a complete aircraft model.
 Generic component kernels and their synthetic unit tests remain buildable. This
-prevents unverified placeholder data from contaminating DATCOM generation or FDR
-calibration.
+keeps the provisional wing calibration configuration separate from a claimed
+complete or validated T-6C flight model.
 
 ## Next acceptance gate
 

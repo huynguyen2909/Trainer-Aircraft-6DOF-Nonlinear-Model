@@ -120,6 +120,7 @@ void validateConfig(const VATC_MainWingConfig& config)
             config.flight.r_deg_s,
             config.controls.aileron_deg,
             config.controls.flap_deg,
+            config.controls.aileron_limit_deg,
             config.wing.area_m2,
             config.wing.aspect_ratio,
             config.wing.mean_chord_m,
@@ -138,6 +139,11 @@ void validateConfig(const VATC_MainWingConfig& config)
             config.aero.oswald_e,
             config.aero.Cm0,
             config.aero.Cm_alpha_per_rad,
+            config.aero.CL_q,
+            config.aero.Cm_q,
+            config.wing.quarter_chord_sweep_deg.value_or(0.0),
+            config.wing.flapped_area_m2.value_or(0.0),
+            config.tabulated_flap.extra_induced_factor,
             config.flap.eta_in,
             config.flap.eta_out,
             config.flap.chord_ratio,
@@ -198,11 +204,34 @@ void validateConfig(const VATC_MainWingConfig& config)
         );
     }
 
-    if (config.controls.flap_deg < 0.0 || config.controls.flap_deg > 40.0)
+    if (config.tabulated_flap.enabled)
     {
-        throw std::invalid_argument(
-            "MainWing configured flap default must be in [0, 40] deg."
-        );
+        for (const auto* table : {&config.tabulated_flap.delta_CL,
+                                 &config.tabulated_flap.delta_CD_profile,
+                                 &config.tabulated_flap.delta_Cm_at_aero_reference})
+        {
+            validateLookupTable(*table);
+            if (table->x.front() != 0.0 || table->values.front() != 0.0 ||
+                table->x != config.tabulated_flap.delta_CL.x)
+            {
+                throw std::invalid_argument("Flap increments need matching axes and a zero origin.");
+            }
+        }
+        if (config.tabulated_flap.extra_induced_factor < 0.0 ||
+            std::any_of(config.tabulated_flap.delta_CD_profile.values.begin(),
+                        config.tabulated_flap.delta_CD_profile.values.end(),
+                        [](double v) { return v < 0.0; }))
+        {
+            throw std::invalid_argument("Flap drag increments must be nonnegative.");
+        }
+    }
+    const double maximumFlapDeg = config.tabulated_flap.enabled
+        ? config.tabulated_flap.delta_CL.x.back() : 40.0;
+    if (config.controls.flap_deg < 0.0 || config.controls.flap_deg > maximumFlapDeg ||
+        config.controls.aileron_limit_deg <= 0.0 ||
+        std::abs(config.controls.aileron_deg) > config.controls.aileron_limit_deg)
+    {
+        throw std::invalid_argument("MainWing configured controls exceed their domain.");
     }
 
     if (config.wing.area_m2 <= 0.0 ||
@@ -212,6 +241,13 @@ void validateConfig(const VATC_MainWingConfig& config)
         throw std::invalid_argument(
             "MainWing requires area > 0, aspect_ratio >= 2.5, and MAC > 0."
         );
+    }
+
+    if (config.wing.flapped_area_m2.has_value() &&
+        (*config.wing.flapped_area_m2 <= 0.0 ||
+         *config.wing.flapped_area_m2 > config.wing.area_m2))
+    {
+        throw std::invalid_argument("Invalid explicit flapped wing area.");
     }
 
     if (config.wing.taper <= 0.0 || config.wing.taper > 1.0 ||
@@ -485,10 +521,9 @@ MainWingEvaluation VATC_MainWing::evaluateDetailed(
     result.momentTransferDzM = data.momentTransferDzM;
 
     // Preserve the warnings from the standalone model.
-    result.warnings.push_back(
-        "Roskam table samples are coarse estimates for the supplied geometry; "
-        "retabulate after geometry changes."
-    );
+    result.warnings.push_back(config_.tabulated_flap.enabled
+        ? "Aircraft-specific tabulated flap increments; check their source and validity range."
+        : "Roskam table samples are coarse estimates; retabulate after geometry changes.");
 
     if (std::abs(data.angleOfAttackRad) > 10.0 * PI / 180.0 ||
         std::abs(data.sideSlipRad) > 5.0 * PI / 180.0)
@@ -506,7 +541,8 @@ MainWingEvaluation VATC_MainWing::evaluateDetailed(
         );
     }
 
-    if (std::abs(data.pitchRateRadps) > 1.0e-12)
+    if (std::abs(data.pitchRateRadps) > 1.0e-12 &&
+        config_.aero.CL_q == 0.0 && config_.aero.Cm_q == 0.0)
     {
         result.warnings.push_back(
             "Pitch-rate q is reported but does not enter the supplied static "
@@ -626,11 +662,14 @@ void VATC_MainWing::readRuntimeInputs(
         throw std::invalid_argument("MainWing requires nonnegative airspeed.");
     }
 
-    if (data.flapDeflectionRad < 0.0 ||
-        data.flapDeflectionRad > MAX_FLAP_DEFLECTION_RAD)
+    const double maximumFlapRad = config_.tabulated_flap.enabled
+        ? degreesToRadians(config_.tabulated_flap.delta_CL.x.back())
+        : MAX_FLAP_DEFLECTION_RAD;
+    if (data.flapDeflectionRad < 0.0 || data.flapDeflectionRad > maximumFlapRad ||
+        std::abs(data.aileronDeflectionRad) > degreesToRadians(config_.controls.aileron_limit_deg))
     {
         throw std::invalid_argument(
-            "MainWing plain flap requires 0 <= flap deflection <= 40 deg."
+            "MainWing control deflection exceeds the configured domain."
         );
     }
 }
@@ -648,6 +687,11 @@ void VATC_MainWing::calculateGeometry(WorkingData& data) const
         (1.0 - config_.wing.taper) /
             (config_.wing.aspect_ratio * (1.0 + config_.wing.taper))
     );
+    if (config_.wing.quarter_chord_sweep_deg.has_value())
+    {
+        data.quarterChordSweepAngleRad =
+            degreesToRadians(*config_.wing.quarter_chord_sweep_deg);
+    }
 
     if (std::abs(data.quarterChordSweepAngleRad) >
         MAX_PROFILE_DRAG_SWEEP_RAD)
@@ -670,6 +714,10 @@ void VATC_MainWing::calculateGeometry(WorkingData& data) const
             0.5 * (1.0 - config_.wing.taper) *
                 (etaOut * etaOut - etaIn * etaIn)
         );
+    if (config_.wing.flapped_area_m2.has_value())
+    {
+        data.flappedWingAreaM2 = *config_.wing.flapped_area_m2;
+    }
 
     // Original: aw = a + iw
     data.wingAngleOfAttackRad =
@@ -683,6 +731,13 @@ void VATC_MainWing::calculateGeometry(WorkingData& data) const
 
 void VATC_MainWing::calculateFlapLookupData(WorkingData& data) const
 {
+    if (config_.tabulated_flap.enabled)
+    {
+        data.projectedChordRatio = 1.0;
+        data.flapChordToProjectedChordRatio = config_.flap.chord_ratio;
+        data.thicknessToProjectedChordRatio = config_.flap.thickness_ratio;
+        return;
+    }
     // Original: kpnon = table(kprime, dfdeg)
     data.flapNonlinearityFactor =
         interpolate(config_.tables.kprime, data.flapDeflectionDeg);
@@ -765,6 +820,35 @@ void VATC_MainWing::calculateLongitudinalAerodynamics(
     WorkingData& data
 ) const
 {
+    data.normalizedPitchRate = data.airspeedMps > EPSILON_VELOCITY_MPS
+        ? data.pitchRateRadps * config_.wing.mean_chord_m / (2.0 * data.airspeedMps)
+        : 0.0;
+    if (config_.tabulated_flap.enabled)
+    {
+        data.cleanLiftCoefficient = config_.aero.CL0 +
+            config_.aero.CL_alpha_per_rad * data.wingAngleOfAttackRad +
+            config_.aero.CL_q * data.normalizedPitchRate;
+        data.cleanPitchMomentCoefficient = config_.aero.Cm0 +
+            config_.aero.Cm_alpha_per_rad * data.wingAngleOfAttackRad +
+            config_.aero.Cm_q * data.normalizedPitchRate;
+        data.flapLiftCoefficientIncrement = interpolate(
+            config_.tabulated_flap.delta_CL, data.flapDeflectionDeg);
+        data.flapPitchMomentCoefficientIncrement = interpolate(
+            config_.tabulated_flap.delta_Cm_at_aero_reference, data.flapDeflectionDeg);
+        data.profileDragCoefficientIncrement = interpolate(
+            config_.tabulated_flap.delta_CD_profile, data.flapDeflectionDeg);
+        data.flapInducedDragCoefficientIncrement = config_.tabulated_flap.extra_induced_factor *
+            data.flapLiftCoefficientIncrement * data.flapLiftCoefficientIncrement;
+        data.flapDragCoefficientIncrement = data.profileDragCoefficientIncrement +
+            data.flapInducedDragCoefficientIncrement;
+        data.liftCoefficient = data.cleanLiftCoefficient + data.flapLiftCoefficientIncrement;
+        data.dragCoefficient = config_.aero.CD0 + data.liftCoefficient * data.liftCoefficient /
+            (PI * config_.aero.oswald_e * config_.wing.aspect_ratio) +
+            data.flapDragCoefficientIncrement;
+        data.pitchMomentCoefficientAtAerodynamicReference = data.cleanPitchMomentCoefficient +
+            data.flapPitchMomentCoefficientIncrement;
+        return;
+    }
     // Roskam 8.22 reference-wing slope, exactly as in the standalone model.
     // Original: k = clalpha/(2*pi)
     data.sectionSlopeParameter =
@@ -807,12 +891,14 @@ void VATC_MainWing::calculateLongitudinalAerodynamics(
     // Original: CLup = cl0 + cla*aw
     data.cleanLiftCoefficient =
         config_.aero.CL0 +
-        config_.aero.CL_alpha_per_rad * data.wingAngleOfAttackRad;
+        config_.aero.CL_alpha_per_rad * data.wingAngleOfAttackRad +
+        config_.aero.CL_q * data.normalizedPitchRate;
 
     // Original: Cmup = cm0 + cma*aw
     data.cleanPitchMomentCoefficient =
         config_.aero.Cm0 +
-        config_.aero.Cm_alpha_per_rad * data.wingAngleOfAttackRad;
+        config_.aero.Cm_alpha_per_rad * data.wingAngleOfAttackRad +
+        config_.aero.Cm_q * data.normalizedPitchRate;
 
     // Original: CL = CLup + dCL
     data.liftCoefficient =

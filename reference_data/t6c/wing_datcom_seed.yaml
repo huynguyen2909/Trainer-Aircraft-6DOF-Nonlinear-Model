@@ -1,87 +1,883 @@
-schema_version: 1
-aircraft: T-6C Texan II
-component: isolated_main_wing
-status: geometry_seed_only_not_a_datcom_result
-
-# This file is a traceable starting point for DATCOM, not an executable input
-# deck. Do not transfer uncomputed coefficients into VATC_MainWingConfig.
-sources:
-  t6c_dimensions: https://defense.txtav.com/en/t-6c
-  pc9m_proxy_drawing: https://www.pilatus-aircraft.com/assets/files/Model-Building-Plans/PC-9-M-Model-Building-Plan.pdf
-  pc9m_page: 5
-  digital_datcom_user_manual: AFFDL-TR-79-3032, Volume I, WGPLNF and OPTINS input descriptions
-  datum_and_cg: reference_data/t6c/geometry_mass.yaml
-
-reference_geometry:
-  wing_area_sref_m2: 16.28              # T-6C manufacturer
-  span_blref_m: 10.20                # T-6C manufacturer
-  semi_span_m: 5.10                 # span / 2; not exposed semispan SSPNE
-  aspect_ratio: 6.390663390663391  # span^2 / area
-  mean_aerodynamic_chord_cbarr_m: 1.650 # PC-9 M page 5 proxy
-  outer_wing_dihedral_deg: 7.0       # PC-9 M front view proxy
-  rib_25_twist_magnitude_deg: 2.2   # PC-9 M section view; DATCOM sign not assigned
-
-auxiliary_drawing_datum:
-  axes: {x: aft, y: aircraft_right, z: up}
-  mac_le_x_aft_m: 0.266              # PC-9 M page 5 proxy
-  assumed_cg_x_aft_m: 0.761          # mac_le_x + 0.30 * MAC
-  assumed_cg_fraction_of_mac: 0.30  # modelling assumption, not measured
-body_frd_origin_at_cg:
-  axes: {x: forward, y: aircraft_right, z: down}
-  cg_m: {x: 0.0, y: 0.0, z: 0.0}
-  representative_mac_le_m: {x: 0.495, y: 0.0, z: 0.0}
-  representative_quarter_mac_m: {x: 0.0825, y: 0.0, z: 0.0}
-  position_note: Y=0 projects the representative chord onto the aircraft symmetry plane. Z=0 assumes the CG and wing reference level coincide; neither is a measured T-6C aerodynamic-center location.
-
-digital_datcom_input_mapping:
-  OPTINS:
-    SREF_m2: 16.28
-    CBARR_m: 1.650
-    BLREF_m: 10.20
-  WGPLNF:
-    SSPN_m: 5.10                  # nominal semispan only; confirm actual panel geometry
-    SSPNE_m: null                 # exposed semispan excluding fuselage
-    CHRDR_m: null                 # root chord at DATCOM's theoretical root station
-    CHRDTP_m: null                # tip chord; the drawing's 665 mm is not this chord
-    CHRDBP_m: null                # chord at planform breakpoint, if used
-    SSPNOP_m: null                # breakpoint semispan, if used
-    SAVSI_deg: null               # sweep at CHSTAT
-    CHSTAT: null                  # sweep reference chord fraction
-    TWISTA_deg: null              # signed root-to-tip twist; validate sign and zero station
-    DHDADI_deg: null              # panel dihedral requires DATCOM-specific interpretation
-    DHDADO_deg: null
-    wing_airfoil_designation: null
-  SYNTHS:
-    XCG_from_drawing_datum_aft_m: 0.761
-    ZCG_from_drawing_datum_up_m: null # existing -2 m FRD proxy is an assumption; validate DATCOM Z sign
-    XW_from_drawing_datum_aft_m: null # requires DATCOM wing-apex definition
-    ZW_from_drawing_datum_up_m: null
-  FLTCON:
-    mach_grid: null
-    altitude_grid_m: null
-    alpha_grid_deg: null
-    reynolds_grid: null
-
-isolated_wing_coefficients:
-  cl_alpha_section_per_rad: null
-  CL_alpha_wing_per_rad: null
-  CL0_wing: null
-  CD0_wing: null
-  Cm0_wing_at_quarter_mac: null
-  Cm_alpha_wing_at_quarter_mac_per_rad: null
-  oswald_e_for_existing_wing_kernel: null # this is not a single direct DATCOM output
-  lateral_derivatives_wing_only: null
-  flap_and_aileron_effectiveness: null
-
-moment_mapping_for_existing_kernel:
-  reference_aero_h: 0.25           # temporary geometric quarter-MAC reference
-  reference_output_h: 0.30         # assumed CG at 30% MAC
-  reference_aero_z_m: 0.0          # provisional, CG-origin BODY z positive down
-  reference_output_z_m: 0.0        # CG origin
-  note: Existing MainWing transfers its intrinsic pitching moment from aero_h to output_h; avoid applying the same r cross F twice.
-
-next_required_inputs:
-  - Digitize the PC-9 M wing leading and trailing edges by span station; reconcile planform area and MAC with the T-6C manufacturer values.
-  - Confirm the T-6C wing airfoil and representative thickness/camber or provide measured section polar data.
-  - Establish incidence, signed twist, sweep, exposed semispan, flap/aileron boundaries, and a defined Mach/Re/alpha operating grid.
-  - Run and document DATCOM wing-only outputs; map their reference area, moment origin, derivative units and scope to the MainWing kernel.
+{
+  "schema_version": 2,
+  "status": "provisional_DATCOM_plus_explicit_engineering_proxies_not_optimized",
+  "component": "isolated_main_wing",
+  "sources": {
+    "datcom": "AFWAL-TR-83-3048, uploaded 3134-page PDF",
+    "geometry": "PC-9M model building plan, page 5; interpreted and scaled per conversation",
+    "controls": "User-supplied FCS T-6C limits",
+    "fdr": "Relative 13962..14027 summary only; raw records not committed"
+  },
+  "inputs": {
+    "S_ref": {
+      "value": 16.28,
+      "unit": "m2",
+      "provenance": "USER: reference wing area"
+    },
+    "b": {
+      "value": 10.124,
+      "unit": "m",
+      "provenance": "DRAWING_PROXY: PC-9M projected span; public T-6C span remains 10.20 m"
+    },
+    "cbar_ref": {
+      "value": 1.65,
+      "unit": "m",
+      "provenance": "DRAWING_PROXY: mean aerodynamic chord"
+    },
+    "root_chord_raw": {
+      "value": 1.88,
+      "unit": "m",
+      "provenance": "USER/DRAWING: chord interpreted at R6"
+    },
+    "tip_chord_raw": {
+      "value": 1.14,
+      "unit": "m",
+      "provenance": "USER/DRAWING: chord at R25"
+    },
+    "y_R6": {
+      "value": 0.65,
+      "unit": "m",
+      "provenance": "PROXY: approximate rib station from drawing; center panel constant chord"
+    },
+    "y_R11": {
+      "value": 1.35,
+      "unit": "m",
+      "provenance": "PROXY: approximate station; USER: dihedral starts here"
+    },
+    "y_R5": {
+      "value": 0.45,
+      "unit": "m",
+      "provenance": "PROXY: nominal flap inboard station"
+    },
+    "y_R17": {
+      "value": 2.8,
+      "unit": "m",
+      "provenance": "PROXY: flap outboard / aileron inboard station"
+    },
+    "incidence_root": {
+      "value": 0.5,
+      "unit": "deg",
+      "provenance": "USER: root incidence"
+    },
+    "twist_tip_minus_root": {
+      "value": -2.5,
+      "unit": "deg",
+      "provenance": "USER: linear R6-R25; constant inboard"
+    },
+    "outer_dihedral": {
+      "value": 7.0,
+      "unit": "deg",
+      "provenance": "USER/DRAWING: zero inboard R11"
+    },
+    "airfoil": {
+      "value": "NACA 4312",
+      "unit": "-",
+      "provenance": "USER_ASSUMPTION: all stations; not a verified PIL airfoil polar"
+    },
+    "thickness_ratio": {
+      "value": 0.12,
+      "unit": "-",
+      "provenance": "NACA designation"
+    },
+    "maximum_camber": {
+      "value": 0.04,
+      "unit": "-",
+      "provenance": "NACA designation"
+    },
+    "maximum_camber_x_over_c": {
+      "value": 0.3,
+      "unit": "-",
+      "provenance": "NACA designation"
+    },
+    "maximum_thickness_x_over_c": {
+      "value": 0.3,
+      "unit": "-",
+      "provenance": "PROXY: choose DATCOM thickness factor L=1.2"
+    },
+    "unswept_spar_chord_fraction": {
+      "value": 0.35,
+      "unit": "-",
+      "provenance": "PROXY: straight spar from drawing"
+    },
+    "Mach": {
+      "value": 0.25383,
+      "unit": "-",
+      "provenance": "FDR summary: Relative 13962..14027, 66 one-second rows"
+    },
+    "rho": {
+      "value": 1.10681,
+      "unit": "kg/m3",
+      "provenance": "FDR-derived: Pt-Qc and TAT, recovery factor 1"
+    },
+    "TAS": {
+      "value": 87.953,
+      "unit": "m/s",
+      "provenance": "FDR-derived: Mach + TAT"
+    },
+    "mu": {
+      "value": 1.84e-05,
+      "unit": "Pa s",
+      "provenance": "Sutherland at Ts=298.751 K"
+    },
+    "alpha_body_seed": {
+      "value": 1.2292929292929293,
+      "unit": "deg",
+      "provenance": "FDR AOA-2/3/4 average; ASSUMPTION: equals body alpha; bias=0"
+    },
+    "alpha_sensor_bias": {
+      "value": 0.0,
+      "unit": "deg",
+      "provenance": "PROXY: no calibration available; freeze initially"
+    },
+    "beta_seed": {
+      "value": 0.0,
+      "unit": "deg",
+      "provenance": "ASSUMPTION: symmetric near-level condition"
+    },
+    "rates_seed": {
+      "value": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "unit": "rad/s",
+      "provenance": "ASSUMPTION: p=q=r=0 for static seed evaluation"
+    },
+    "flap_seed": {
+      "value": 0.0,
+      "unit": "deg",
+      "provenance": "FDR Up mapped to nominal zero"
+    },
+    "aileron_seed": {
+      "value": 0.0,
+      "unit": "deg",
+      "provenance": "ASSUMPTION: symmetric seed; FDR mean -0.209 deg not imposed"
+    },
+    "h_CG": {
+      "value": 0.3,
+      "unit": "MAC",
+      "provenance": "USER_ASSUMPTION: CG; positive aft"
+    },
+    "h_aero": {
+      "value": 0.25,
+      "unit": "MAC",
+      "provenance": "PROXY: quarter-MAC aerodynamic center"
+    },
+    "z_aero_minus_CG": {
+      "value": 0.0,
+      "unit": "m",
+      "provenance": "PROXY: same height; avoids inventing a vertical lever arm"
+    },
+    "MAC_LE_drawing_x_aft": {
+      "value": 0.266,
+      "unit": "m",
+      "provenance": "DRAWING_PROXY: auxiliary datum only"
+    },
+    "section_slope_viscous_ratio": {
+      "value": 0.95,
+      "unit": "-",
+      "provenance": "PROXY: 5% reduction from 2*pi; not measured polar"
+    },
+    "oswald_e": {
+      "value": 0.82,
+      "unit": "-",
+      "provenance": "PROXY: moderate AR tapered wing; includes viscous drag-due-to-lift"
+    },
+    "surface_roughness_height": {
+      "value": 6.35e-06,
+      "unit": "m",
+      "provenance": "PROXY: smooth painted surface scenario"
+    },
+    "lifting_surface_drag_factor": {
+      "value": 1.05,
+      "unit": "-",
+      "provenance": "PROXY for R_LS chart, not digitized DATCOM data"
+    },
+    "transition": {
+      "value": "fully_turbulent",
+      "unit": "-",
+      "provenance": "ASSUMPTION: conservative profile drag seed"
+    },
+    "wing_body_interference_factor": {
+      "value": 1.0,
+      "unit": "-",
+      "provenance": "ASSUMPTION: isolated wing; body loads treated separately"
+    },
+    "slipstream_dynamic_pressure_ratio": {
+      "value": 1.0,
+      "unit": "-",
+      "provenance": "ASSUMPTION: free stream; propwash coupling not identified"
+    },
+    "ground_effect_factor": {
+      "value": 1.0,
+      "unit": "-",
+      "provenance": "ASSUMPTION: airborne seed, no ground effect"
+    },
+    "split_flap_chord_ratio": {
+      "value": 0.25,
+      "unit": "-",
+      "provenance": "PROXY: constant cf/c; mechanical hinge loads excluded"
+    },
+    "split_flap_panel_boundaries": {
+      "value": [
+        0.45,
+        1.625,
+        2.8
+      ],
+      "unit": "m",
+      "provenance": "PROXY: two equal-span panels each side; four total, contiguous, no gap"
+    },
+    "aileron_absolute_chord": {
+      "value": 0.285,
+      "unit": "m",
+      "provenance": "USER: quarter of raw tip chord, held fixed after area closure"
+    },
+    "aileron_up_down_limits": {
+      "value": [
+        20.0,
+        11.0
+      ],
+      "unit": "deg",
+      "provenance": "USER/FCS: physical up/down magnitudes"
+    },
+    "aileron_effectiveness_ratio": {
+      "value": 0.85,
+      "unit": "-",
+      "provenance": "PROXY: reduction of thin-airfoil plain-flap effectiveness"
+    },
+    "split_flap_effectiveness_ratio": {
+      "value": 0.75,
+      "unit": "-",
+      "provenance": "PROXY: split-flap effectiveness; not a DATCOM chart result"
+    },
+    "split_flap_nonlinearity_angle": {
+      "value": 45.0,
+      "unit": "deg",
+      "provenance": "PROXY: smooth saturation scale"
+    },
+    "split_flap_table_angles": {
+      "value": [
+        0.0,
+        10.0,
+        20.0,
+        23.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0
+      ],
+      "unit": "deg",
+      "provenance": "PROXY: tabulation and max domain 60 deg; only zero-flap seed is current calibration target"
+    },
+    "split_flap_pressure_drag_factor": {
+      "value": 1.2,
+      "unit": "-",
+      "provenance": "PROXY: Cd_plate multiplier on flap frontal projection"
+    },
+    "split_flap_increment_arm": {
+      "value": 0.25,
+      "unit": "local chord",
+      "provenance": "PROXY: lift increment acts 0.25 chord aft of quarter-chord"
+    },
+    "split_flap_extra_induced_factor": {
+      "value": 0.1,
+      "unit": "-",
+      "provenance": "PROXY: additional nonuniform-loading drag, separate from total-CL polar"
+    },
+    "Cm_twist_factor": {
+      "value": -0.0002,
+      "unit": "1/deg",
+      "provenance": "PROXY: small-sweep estimate inspired by DATCOM Fig 4.1.4.1-5, not digitized"
+    },
+    "aileron_adverse_yaw_factor": {
+      "value": -0.15,
+      "unit": "-",
+      "provenance": "PROXY for DATCOM Fig 6.2.2.1-9, not digitized"
+    },
+    "CL_alpha_dot": {
+      "value": 0.0,
+      "unit": "-",
+      "provenance": "ASSUMPTION: omitted; triangular-wing DATCOM formula does not apply"
+    },
+    "Cm_alpha_dot": {
+      "value": 0.0,
+      "unit": "-",
+      "provenance": "ASSUMPTION: omitted; not identifiable from steady segment"
+    },
+    "alpha_working_range": {
+      "value": [
+        -2.0,
+        8.0
+      ],
+      "unit": "deg body",
+      "provenance": "PROXY: local pre-stall model, not a stall model"
+    }
+  },
+  "results": [
+    {
+      "parameter": "aspect_ratio",
+      "value": 6.295784766584767,
+      "unit": "-",
+      "provenance": "GEOMETRY",
+      "formula": "b^2/S",
+      "reference": "2.2.2-1; PDF 235"
+    },
+    {
+      "parameter": "raw_planform_area",
+      "value": 15.768239999999999,
+      "unit": "m2",
+      "provenance": "GEOMETRY",
+      "formula": "2*integral(c_raw dy)",
+      "reference": "2.2.2-2; PDF 236"
+    },
+    {
+      "parameter": "chord_area_scale",
+      "value": 1.03245511230169,
+      "unit": "-",
+      "provenance": "ASSUMPTION/CLOSURE",
+      "formula": "S_ref/S_raw",
+      "reference": "Engineering geometry closure"
+    },
+    {
+      "parameter": "closed_planform_area",
+      "value": 16.28,
+      "unit": "m2",
+      "provenance": "GEOMETRY",
+      "formula": "2*integral(c dy)",
+      "reference": "2.2.2-2; PDF 236"
+    },
+    {
+      "parameter": "c_root_effective",
+      "value": 1.9410156111271772,
+      "unit": "m",
+      "provenance": "GEOMETRY/CLOSURE",
+      "formula": "scale*1.880",
+      "reference": "Not a measured dimension"
+    },
+    {
+      "parameter": "c_tip_effective",
+      "value": 1.1769988280239265,
+      "unit": "m",
+      "provenance": "GEOMETRY/CLOSURE",
+      "formula": "scale*1.140",
+      "reference": "Not a measured dimension"
+    },
+    {
+      "parameter": "MAC_geometric",
+      "value": 1.6445821269515928,
+      "unit": "m",
+      "provenance": "GEOMETRY",
+      "formula": "2*integral(c^2 dy)/S",
+      "reference": "2.2.2-1; PDF 235; ref MAC retained as 1.650"
+    },
+    {
+      "parameter": "sweep_LE_outer",
+      "value": 3.4683836797883583,
+      "unit": "deg",
+      "provenance": "GEOMETRY_PROXY",
+      "formula": "atan(delta(x_LE+f*c)/delta y)",
+      "reference": "2.2.2-3; PDF 237; outer panel representative sweep"
+    },
+    {
+      "parameter": "sweep_quarter_outer",
+      "value": 0.9920798350281991,
+      "unit": "deg",
+      "provenance": "GEOMETRY_PROXY",
+      "formula": "atan(delta(x_LE+f*c)/delta y)",
+      "reference": "2.2.2-3; PDF 237; outer panel representative sweep"
+    },
+    {
+      "parameter": "sweep_half_outer",
+      "value": -1.4879339075143945,
+      "unit": "deg",
+      "provenance": "GEOMETRY_PROXY",
+      "formula": "atan(delta(x_LE+f*c)/delta y)",
+      "reference": "2.2.2-3; PDF 237; outer panel representative sweep"
+    },
+    {
+      "parameter": "cl_alpha_section",
+      "value": 6.171137927202384,
+      "unit": "1/rad",
+      "provenance": "PROXY+PG",
+      "formula": "0.95*2*pi/sqrt(1-M^2)",
+      "reference": "4.1.1.2-1; PDF 471; viscous factor assumed"
+    },
+    {
+      "parameter": "CL_alpha",
+      "value": 4.53794768208786,
+      "unit": "1/rad",
+      "provenance": "DATCOM+EQUIVALENT_WING",
+      "formula": "2*pi*A/[2+sqrt(4+(A*B/kappa)^2*(1+tan(Lambda_half)^2/B^2))]",
+      "reference": "Fig 4.1.3.2-49; PDF 549; kappa=0.95, representative outer sweep"
+    },
+    {
+      "parameter": "alpha_zero_section",
+      "value": -3.5315200000000004,
+      "unit": "deg",
+      "provenance": "DATCOM",
+      "formula": "0.93*(alpha_i-9.12*c_li); alpha_i=1.6*4/6, c_li=0.8*4/6",
+      "reference": "Table 4.1.1-D, Eq 4.1.1.1-a; PDF 467-468"
+    },
+    {
+      "parameter": "chord_weighted_twist",
+      "value": -0.9699835485666413,
+      "unit": "deg",
+      "provenance": "STRIP_PROXY",
+      "formula": "2*integral(c*twist dy)/S",
+      "reference": "Replaces a full lifting-line/twist-chart calculation"
+    },
+    {
+      "parameter": "alpha_zero_wing",
+      "value": -2.5615364514333594,
+      "unit": "deg",
+      "provenance": "STRIP_PROXY",
+      "formula": "alpha_zero_section - chord_weighted_twist",
+      "reference": "DATCOM 4.1.3.1-c structure; PDF 496-500; weighting is a proxy"
+    },
+    {
+      "parameter": "CL0_wing",
+      "value": 0.20287913876294228,
+      "unit": "-",
+      "provenance": "DERIVED",
+      "formula": "-CL_alpha*alpha_zero_wing_rad",
+      "reference": "Linear lift law; incidence not included here"
+    },
+    {
+      "parameter": "cm0_section",
+      "value": -0.08266666666666667,
+      "unit": "-",
+      "provenance": "DATCOM_THEORETICAL",
+      "formula": "-0.124*4/6",
+      "reference": "Table 4.1.1-D; 4.1.2.1-1; PDF 467,489"
+    },
+    {
+      "parameter": "Cm0_at_quarter_MAC",
+      "value": -0.06222032574165327,
+      "unit": "-",
+      "provenance": "DATCOM+TWIST_PROXY",
+      "formula": "A*cos(Lambda25)^2/(A+2*cos(Lambda25))*cm0_section + K_mtheta*twist",
+      "reference": "4.1.4.1-a,c; PDF 654; Fig 4.1.4.1-5, PDF 658-659"
+    },
+    {
+      "parameter": "Cm_alpha_at_quarter_MAC",
+      "value": 0.0,
+      "unit": "1/rad",
+      "provenance": "AC_ASSUMPTION",
+      "formula": "(h_ref-h_AC)*CL_alpha = 0",
+      "reference": "4.1.4.2-a; PDF 662"
+    },
+    {
+      "parameter": "Re_MAC",
+      "value": 8729509.721983697,
+      "unit": "-",
+      "provenance": "AIR_DATA",
+      "formula": "rho*V*cbar/mu",
+      "reference": "FDR summary + Sutherland; rounded inputs"
+    },
+    {
+      "parameter": "roughness_Re_cutoff",
+      "value": 19225024.335453227,
+      "unit": "-",
+      "provenance": "CORRELATION_PROXY",
+      "formula": "38.21*(cbar/k)^1.053",
+      "reference": "Engineering substitute for roughness chart 4.1.5.1-27; not its exact equation"
+    },
+    {
+      "parameter": "skin_friction_Cf",
+      "value": 0.003051667211636814,
+      "unit": "-",
+      "provenance": "CORRELATION_PROXY",
+      "formula": "0.455/[log10(min(Re,Re_cut))^2.58*(1+0.144*M^2)^0.65]",
+      "reference": "Analytic approximation replacing Fig 4.1.5.1-26, not a digitized chart"
+    },
+    {
+      "parameter": "S_wet_exposed",
+      "value": 28.338760193401423,
+      "unit": "m2",
+      "provenance": "GEOMETRY_PROXY",
+      "formula": "2*(1+0.25*t/c)*S_exposed",
+      "reference": "Two surfaces; center patch excluded from friction to avoid counting fuselage skin"
+    },
+    {
+      "parameter": "CD0",
+      "value": 0.006496514545087751,
+      "unit": "-",
+      "provenance": "DATCOM+DRAG_PROXIES",
+      "formula": "Cf*(1+1.2*t/c+100*(t/c)^4)*R_LS*S_wet/S",
+      "reference": "4.1.5.1-a; PDF 723"
+    },
+    {
+      "parameter": "CL_at_FDR_seed",
+      "value": 0.3398428192787815,
+      "unit": "-",
+      "provenance": "STATIC_SEED",
+      "formula": "CL0+CL_alpha*(alpha_body+incidence)",
+      "reference": "AOA->body interpretation is assumed"
+    },
+    {
+      "parameter": "CD_at_FDR_seed",
+      "value": 0.013617540985836445,
+      "unit": "-",
+      "provenance": "DATCOM_POLAR+E_PROXY",
+      "formula": "CD0+CL^2/(pi*A*e)",
+      "reference": "4.1.5.2-e; PDF 757"
+    },
+    {
+      "parameter": "dynamic_pressure",
+      "value": 4280.9917763116455,
+      "unit": "Pa",
+      "provenance": "AIR_DATA",
+      "formula": "rho*V^2/2",
+      "reference": "Dynamic pressure definition"
+    },
+    {
+      "parameter": "CL_q",
+      "value": 1.815179072835144,
+      "unit": "-",
+      "provenance": "DATCOM",
+      "formula": "(0.5+2*(h_AC-h_CG))*CL_alpha",
+      "reference": "7.1.1.1-a,b; PDF 2470; rotation about CG"
+    },
+    {
+      "parameter": "Cmq_empirical_factor",
+      "value": 0.7147892383292382,
+      "unit": "-",
+      "provenance": "FAIRING_PROXY",
+      "formula": "0.7+0.2*clip((A-6)/4,0,1)",
+      "reference": "7.1.1.2-1; PDF 2488 recommends fairing; interpolation chosen here"
+    },
+    {
+      "parameter": "Cm_q_about_CG",
+      "value": -2.075321063244915,
+      "unit": "-",
+      "provenance": "DATCOM+FAIRING_PROXY",
+      "formula": "-k*c_lalpha0*cos(L25)*[A*(0.5+x+2*x^2)/(A+2*cos(L25))+A^3*tan(L25)^2/(24*(A+6*cos(L25)))+1/8], then Mach correction",
+      "reference": "7.1.1.2-a,b; PDF 2488-2489; x=h_AC-h_CG"
+    },
+    {
+      "parameter": "CL_at_zero_body_alpha",
+      "value": 0.24248020293078132,
+      "unit": "-",
+      "provenance": "REFERENCE_CONVENTION",
+      "formula": "CL0_wing+CL_alpha*incidence_rad",
+      "reference": "Body alpha=0; wing-axis CL0 excludes incidence"
+    },
+    {
+      "parameter": "Cm_alpha_about_CG_at_seed",
+      "value": 0.22736533792910074,
+      "unit": "1/rad",
+      "provenance": "REFERENCE_TRANSFER",
+      "formula": "(h_CG-h_AC)*[CL_alpha*cos(alpha)-CL*sin(alpha)+CD_alpha*sin(alpha)+CD*cos(alpha)]",
+      "reference": "Exact local derivative of r cross F; Cm_alpha at AC=0; wing-only, not aircraft stability"
+    },
+    {
+      "parameter": "Cm_q_at_aero_reference",
+      "value": -2.1661407270665958,
+      "unit": "-",
+      "provenance": "REFERENCE_TRANSFER",
+      "formula": "Cm_q_CG-(h_CG-h_AC)*(cos(alpha)+dCD/dCL*sin(alpha))*CL_q",
+      "reference": "Remove r cross F derivative once; local linearization at alpha_seed"
+    },
+    {
+      "parameter": "CY_beta",
+      "value": -0.046053146303509894,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-2*a/S*integral(c*sin(Gamma)^2 dy)",
+      "reference": "5.1.1.1; PDF 1531; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "CY_p",
+      "value": -0.22942856311890797,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-4*a/(S*b)*integral(c*y*sin(Gamma) dy)",
+      "reference": "7.1.2.1; PDF 2521-2522; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "CY_r",
+      "value": 0.0,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "0 (omitted wing-only yaw side force)",
+      "reference": "7.1.3.1; PDF 2578 (no general method); topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "CY_da",
+      "value": 0.0,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "0 (omitted wing-only control side force)",
+      "reference": "6.2.3.1; PDF 13 (not provided); topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cl_beta",
+      "value": -0.11471428155945398,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-2*a/(S*b)*integral(c*y*sin(Gamma) dy)",
+      "reference": "5.1.2.1; PDF 1538; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cl_p",
+      "value": -0.6566247969334824,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-4*a/(S*b^2)*integral(c*y^2 dy)",
+      "reference": "7.1.2.2; PDF 2531-2533; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cl_r",
+      "value": 0.09834808059997888,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "8*CL/(S*b^2)*integral(c*y^2 dy)",
+      "reference": "7.1.3.2; PDF 2580-2582; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cl_da",
+      "value": 0.31693705795663146,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "2*a*0.85/(S*b)*integral_aileron(y*c*tau dy)",
+      "reference": "6.2.1.1; PDF 2238-2240; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cn_beta",
+      "value": 0.0,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "0 (low sweep seed, no claimed directional stability)",
+      "reference": "5.1.3.1; PDF 1576; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cn_p",
+      "value": -0.05664046987979692,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-CL/6 (low-sweep proxy)",
+      "reference": "7.1.2.3; PDF 2558-2560; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cn_r",
+      "value": -0.003940818938857528,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "-8*CD/(S*b^2)*integral(c*y^2 dy)",
+      "reference": "7.1.3.3; PDF 2592-2593; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "Cn_da",
+      "value": -0.01615631749648563,
+      "unit": "1/rad or per normalized rate",
+      "provenance": "STRIP/ENGINEERING_PROXY",
+      "formula": "K_yaw*CL*Cl_da",
+      "reference": "6.2.2.1-a; PDF 2292; topical reference only; formula here is a proxy, not evaluated DATCOM graphs"
+    },
+    {
+      "parameter": "flapped_wing_area",
+      "value": 8.322304745848328,
+      "unit": "m2",
+      "provenance": "GEOMETRY",
+      "formula": "2*integral_R5^R17(c dy)",
+      "reference": "Not flap plate area; nominal inboard R5 included"
+    },
+    {
+      "parameter": "flap_CL_delta_at_zero",
+      "value": 1.0595602872659382,
+      "unit": "1/rad",
+      "provenance": "ENGINEERING_PROXY",
+      "formula": "a*tau(cf/c)*0.75*S_flapped/S",
+      "reference": "6.1.4.1-a architecture; PDF 2028-2029; span weighting is proxy"
+    },
+    {
+      "parameter": "aileron_effective_limit",
+      "value": 15.5,
+      "unit": "deg",
+      "provenance": "CONTROL_CONVENTION",
+      "formula": "(20+11)/2",
+      "reference": "USER/FCS physical limits; runtime input is half-difference, symmetric equivalent"
+    }
+  ],
+  "stations": [
+    {
+      "station": "center",
+      "y_m": 0.0,
+      "eta": 0.0,
+      "raw_chord_m": 1.88,
+      "chord_m": 1.9410156111271772,
+      "incidence_deg": 0.5,
+      "dihedral_deg": 0.0,
+      "x_LE_from_root_aft_m": 0.0
+    },
+    {
+      "station": "R5",
+      "y_m": 0.45,
+      "eta": 0.08889766890557092,
+      "raw_chord_m": 1.88,
+      "chord_m": 1.9410156111271772,
+      "incidence_deg": 0.5,
+      "dihedral_deg": 0.0,
+      "x_LE_from_root_aft_m": 0.0
+    },
+    {
+      "station": "R6",
+      "y_m": 0.65,
+      "eta": 0.12840774397471355,
+      "raw_chord_m": 1.88,
+      "chord_m": 1.9410156111271772,
+      "incidence_deg": 0.5,
+      "dihedral_deg": 0.0,
+      "x_LE_from_root_aft_m": 0.0
+    },
+    {
+      "station": "R11",
+      "y_m": 1.35,
+      "eta": 0.26669300671671275,
+      "raw_chord_m": 1.762592928377153,
+      "chord_m": 1.8197980798097984,
+      "incidence_deg": 0.1033544877606527,
+      "dihedral_deg": 7.0,
+      "x_LE_from_root_aft_m": 0.042426135961082606
+    },
+    {
+      "station": "R17",
+      "y_m": 2.8,
+      "eta": 0.5531410509679968,
+      "raw_chord_m": 1.5193925657298277,
+      "chord_m": 1.5687046220809422,
+      "incidence_deg": -0.7182683590208523,
+      "dihedral_deg": 7.0,
+      "x_LE_from_root_aft_m": 0.13030884616618227
+    },
+    {
+      "station": "R25",
+      "y_m": 5.062,
+      "eta": 1.0,
+      "raw_chord_m": 1.14,
+      "chord_m": 1.1769988280239265,
+      "incidence_deg": -2.0,
+      "dihedral_deg": 7.0,
+      "x_LE_from_root_aft_m": 0.26740587408613775
+    }
+  ],
+  "split_flap_table": [
+    {
+      "angle_deg": 0.0,
+      "delta_CL": 0.0,
+      "delta_CD_profile": 0.0,
+      "delta_Cm": -0.0
+    },
+    {
+      "angle_deg": 10.0,
+      "delta_CL": 0.17622565488583208,
+      "delta_CD_profile": 0.00462435247152742,
+      "delta_Cm": -0.04747933909969624
+    },
+    {
+      "angle_deg": 20.0,
+      "delta_CL": 0.30884908588238613,
+      "delta_CD_profile": 0.017939644729869628,
+      "delta_Cm": -0.08321121285513775
+    },
+    {
+      "angle_deg": 23.0,
+      "delta_CL": 0.33723683956715134,
+      "delta_CD_profile": 0.023413508224516114,
+      "delta_Cm": -0.09085954183624331
+    },
+    {
+      "angle_deg": 30.0,
+      "delta_CL": 0.3840815555204033,
+      "delta_CD_profile": 0.03833985601588602,
+      "delta_Cm": -0.10348061085831232
+    },
+    {
+      "angle_deg": 40.0,
+      "delta_CL": 0.4132187769736753,
+      "delta_CD_profile": 0.06336441977342983,
+      "delta_Cm": -0.11133086409583948
+    },
+    {
+      "angle_deg": 50.0,
+      "delta_CL": 0.413789521140766,
+      "delta_CD_profile": 0.08999500429011426,
+      "delta_Cm": -0.11148463600757406
+    },
+    {
+      "angle_deg": 60.0,
+      "delta_CL": 0.3994448177412194,
+      "delta_CD_profile": 0.11501956804765806,
+      "delta_Cm": -0.10761983529264482
+    }
+  ],
+  "runtime_config": {
+    "model.derivative_axes": "body",
+    "wing.area_m2": 16.28,
+    "wing.aspect_ratio": 6.295784766584767,
+    "wing.mean_chord_m": 1.65,
+    "wing.taper": 0.6063829787234042,
+    "wing.sweep_le_deg": 3.4683836797883583,
+    "wing.quarter_chord_sweep_deg": 0.9920798350281991,
+    "wing.flapped_area_m2": 8.322304745848328,
+    "wing.incidence_deg": 0.5,
+    "flight.rho_kg_m3": 1.10681,
+    "flight.speed_m_s": 87.953,
+    "flight.alpha_deg": 1.2292929292929293,
+    "controls.aileron_limit_deg": 15.5,
+    "reference.aero_h": 0.25,
+    "reference.output_h": 0.3,
+    "reference.aero_z_m": 0.0,
+    "reference.output_z_m": 0.0,
+    "reference.stability_angle_deg": 0.0,
+    "aero.cl_alpha_per_rad": 6.171137927202384,
+    "aero.CL_alpha_per_rad": 4.53794768208786,
+    "aero.CL0": 0.20287913876294228,
+    "aero.CD0": 0.006496514545087751,
+    "aero.oswald_e": 0.82,
+    "aero.Cm0": -0.06222032574165327,
+    "aero.Cm_alpha_per_rad": 0.0,
+    "aero.CL_q": 1.815179072835144,
+    "aero.Cm_q": -2.1661407270665958,
+    "flap.eta_in": 0.08889766890557092,
+    "flap.eta_out": 0.5531410509679968,
+    "flap.chord_ratio": 0.25,
+    "flap.thickness_ratio": 0.12,
+    "flap.section_effectiveness_per_rad": 2.818656978138102,
+    "flap.effectiveness_ratio_actual": 1.0,
+    "flap.effectiveness_ratio_reference": 1.0,
+    "flap.induced_factor_K": 0.31622776601683794,
+    "flap.interference_factor": 0.0,
+    "tabulated_flap.enabled": true,
+    "tabulated_flap.extra_induced_factor": 0.1,
+    "lateral.CY_beta": -0.046053146303509894,
+    "lateral.CY_p": -0.22942856311890797,
+    "lateral.CY_r": 0.0,
+    "lateral.CY_da": 0.0,
+    "lateral.Cl_beta": -0.11471428155945398,
+    "lateral.Cl_p": -0.6566247969334824,
+    "lateral.Cl_r": 0.09834808059997888,
+    "lateral.Cl_da": 0.31693705795663146,
+    "lateral.Cn_beta": 0.0,
+    "lateral.Cn_p": -0.05664046987979692,
+    "lateral.Cn_r": -0.003940818938857528,
+    "lateral.Cn_da": -0.01615631749648563
+  },
+  "smoke_expected": {
+    "CL": 0.3398428192787815,
+    "CD": 0.013617540985836445,
+    "Cm_aero": -0.06222032574165327,
+    "Cm_CG": -0.045217488351091795,
+    "force_body_N": [
+      -440.71816661930535,
+      0,
+      -23700.100693187076
+    ],
+    "moment_CG_Nm": [
+      0,
+      -5199.830339948117,
+      0
+    ],
+    "note": "Wing-only static snapshot, NOT a whole-aircraft trim or FDR fit."
+  }
+}
