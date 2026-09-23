@@ -188,7 +188,7 @@ void testAnalyticBladeElementIntegral() {
 }
 
 void testStaticMomentumClosure() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     const PropellerOutput output = model.evaluate(seaLevelInput());
     require(output.inflow.converged, "Static inflow solution did not converge");
     require(output.disk.thrustN > 0.0, "Static thrust must be positive");
@@ -230,7 +230,7 @@ void testStaticMomentumClosure() {
 }
 
 void testInstallationTransform() {
-    PropellerParameters p = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters p = makeAnalyticParameters();
     p.hubPositionFromCgBodyM = {};
     p.rotatingInertiaKgM2 = 0.0;
     // Proper +90 radian rotation about body z: propeller +x maps to body +y.
@@ -253,7 +253,7 @@ void testInstallationTransform() {
 }
 
 void testElementSampleSums() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {24.0, 1.5, 2.5};
     const PropellerOutput solved = model.evaluate(input);
@@ -282,7 +282,7 @@ void testElementSampleSums() {
 }
 
 void testAxialSymmetryAndTorqueBookkeeping() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {25.0, 0.0, 0.0};
     const PropellerOutput output = model.evaluate(input);
@@ -322,7 +322,7 @@ void testPFactorSignAgainstStevens() {
         25.0 * std::sin(alphaRad),
     };
 
-    PropellerParameters clockwise = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters clockwise = makeAnalyticParameters();
     clockwise.hubPositionFromCgBodyM = {};
     const PropellerOutput positive = PropellerModel(clockwise).evaluate(input);
     require(positive.inflow.converged, "Positive-rotation P-factor case failed");
@@ -344,7 +344,7 @@ void testPFactorSignAgainstStevens() {
 }
 
 void testAerodynamicPitchRateDamping() {
-    PropellerParameters p = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters p = makeAnalyticParameters();
     p.hubPositionFromCgBodyM = {};
     p.rotatingInertiaKgM2 = 0.0;
     const PropellerModel model(p);
@@ -358,7 +358,7 @@ void testAerodynamicPitchRateDamping() {
 }
 
 void testGyroscopicMomentAndTotalMomentIdentity() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     RuntimeInput input = seaLevelInput();
     input.velocityCgRelativeAirBodyMps = {20.0, 1.0, 2.0};
     input.angularRateBodyWrtInertialBodyRadps = {0.02, 0.05, -0.03};
@@ -405,7 +405,7 @@ void testGyroscopicMomentAndTotalMomentIdentity() {
 }
 
 void testDensityScaling() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     RuntimeInput low = seaLevelInput();
     low.airDensityKgM3 = 0.9;
     low.velocityCgRelativeAirBodyMps = {18.0, 0.0, 1.0};
@@ -431,7 +431,7 @@ void testDensityScaling() {
 }
 
 void testGridConvergence() {
-    PropellerParameters coarse = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters coarse = makeAnalyticParameters();
     coarse.radialElementCount = 32;
     coarse.azimuthStationCount = 48;
     PropellerParameters fine = coarse;
@@ -457,7 +457,7 @@ void testGridConvergence() {
 }
 
 void testTakeoffSweepWithExplicitNumericalGuess() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     constexpr double rotationSpeed_m_s = 65.0 * 0.44704;
     constexpr double groundPitch_rad = 0.035;
 
@@ -489,7 +489,7 @@ void testTakeoffSweepWithExplicitNumericalGuess() {
 }
 
 void testCommonComponentContract() {
-    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters parameters = makeAnalyticParameters();
     parameters.radialElementCount = 24U;
     parameters.azimuthStationCount = 32U;
     const PropellerComponent component(parameters);
@@ -565,7 +565,7 @@ trainer_aircraft::VerticalStabilizerConfig zeroVerticalTailConfig() {
 }
 
 void testStage3TrainerAircraftModelAndRk4Integration() {
-    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters parameters = makeAnalyticParameters();
     parameters.radialElementCount = 16U;
     parameters.azimuthStationCount = 24U;
 
@@ -627,7 +627,7 @@ void testStage3TrainerAircraftModelAndRk4Integration() {
 }
 
 void testDisabledModel() {
-    const PropellerModel model(makeEstimatedTrainerAircraftNaca5868_9Parameters());
+    const PropellerModel model(makeAnalyticParameters());
     RuntimeInput input = seaLevelInput();
     input.enabled = false;
     const PropellerOutput output = model.evaluate(input);
@@ -639,7 +639,7 @@ void testDisabledModel() {
 }
 
 void testPrescribedRotationRateScale() {
-    PropellerParameters parameters = makeEstimatedTrainerAircraftNaca5868_9Parameters();
+    PropellerParameters parameters = makeAnalyticParameters();
     parameters.radialElementCount = 12U;
     parameters.azimuthStationCount = 16U;
     const PropellerModel model(parameters);

@@ -21,7 +21,6 @@ struct ProvisionalTrainerAircraftConfig
     HorizontalStabilizerConfig horizontalStabilizer{};
     VerticalStabilizerConfig verticalStabilizer{};
     fuselage::FuselageComponentConfig fuselage{};
-    propeller::PropellerParameters propeller{};
     landing_gear::LandingGearParameters landingGear{};
 };
 

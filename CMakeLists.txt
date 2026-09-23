@@ -53,11 +53,6 @@ if(TRAINER_AIRCRAFT_BUILDEXAMPLES)
     )
     target_link_libraries(trainer_aircraft_stabilizer_example PRIVATE trainer_aircraft_6dof)
 
-    add_executable(trainer_aircraft_stage3_example
-        examples/stage3_integration.cpp
-    )
-    target_link_libraries(trainer_aircraft_stage3_example PRIVATE trainer_aircraft_6dof)
-
     add_executable(trainer_aircraft_stage4_takeoff_roll
         examples/stage4_takeoff_roll.cpp
     )

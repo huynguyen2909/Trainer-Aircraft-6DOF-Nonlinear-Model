@@ -96,9 +96,6 @@ ProvisionalTrainerAircraftConfig makeProvisionalTrainerAircraftConfig()
     config.horizontalStabilizer = makeProvisionalHorizontalStabilizer();
     config.verticalStabilizer = makeProvisionalVerticalStabilizer();
     config.fuselage = fuselage::makeProvisionalTrainerAircraftFuselageConfig();
-    config.propeller = propeller::makeEstimatedTrainerAircraftNaca5868_9Parameters();
-    config.propeller.radialElementCount = 12U;
-    config.propeller.azimuthStationCount = 16U;
     config.landingGear = makeProvisionalLandingGear();
     return config;
 }
@@ -119,9 +116,6 @@ void addProvisionalTrainerAircraftComponents(
     );
     model.addLoadComponent(
         std::make_unique<fuselage::FuselageComponent>(config.fuselage)
-    );
-    model.addLoadComponent(
-        std::make_unique<propeller::PropellerComponent>(config.propeller)
     );
     model.setGroundContactComponent(
         std::make_unique<landing_gear::LandingGearComponent>(

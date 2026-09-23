@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"D:/VATC/MBCB/CS-FSTD/model tuning/Trainer-Aircraft-6DOF-Nonlinear-Model/build-t6c/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
