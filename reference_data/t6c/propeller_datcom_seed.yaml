@@ -1,0 +1,82 @@
+schema_version: 1
+aircraft: T-6C Texan II / PC-9M proxy
+status: provisional_not_fdr_calibrated
+purpose: BEMT propulsion seed and Digital DATCOM PROPWR input at one FDR cruise point
+sources:
+  pilatus_drawing: "PC-9 M Model Building Plan, PDF page 5: https://www.pilatus-aircraft.com/assets/files/Model-Building-Plans/PC-9-M-Model-Building-Plan.pdf"
+  hartzell: "https://hartzellprop.com/hartzell-receives-faa-certification-and-makes-first-shipments-for-jpats-program/"
+  hartzell_model: "Hartzell HC-E4A-2/E9612 (T-6A family), see https://hartzellprop.com/SERVICE-DOCUMENTS/SB/SB-Index.pdf; T-6C applicability not independently verified"
+  easa_type_certificate: "EASA IM.P.133 issue 09, table for HC-E4A-2/E9612, PDF page 9: https://www.easa.europa.eu/sl/downloads/7819/en"
+  nasa_section_proxy: "https://ntrs.nasa.gov/citations/19930093315 (NACA 16-series tested on other propellers, NOT T-6C polar)"
+  digital_datcom_manual: "https://www.pdas.com/refs/AFFDL-TR-79-3032-Digdat-manual-DGS-scan.pdf (Figure 12, PROPWR); https://holycows.net/datcom/Downloads/Digital_Datcom_Users_Manual_1.4.pdf (sections 3.4 and 5.2)"
+drawing:
+  pc9m_diameter_m: 2.439 # drawing says diameter 96 in = 2439 mm
+  pc9m_blade_count: 4 # side view explicitly says (4 BLADE PROP)
+  pc9m_prop_hub_global_X_m: -1.9704 # drawing global X positive aft
+  pc9m_prop_hub_global_Z_m: 2.4468 # FRP FRONT=2.000 m plus 0.4468 m
+  cg_global_X_m: 4.3675 # assumed at 30% of wing MAC
+  cg_global_Z_m: 2.0 # provisional CG height, not determined by 30% MAC
+  hub_from_cg_body_frd_m: [6.3379, 0.0, -0.4468]
+propeller_proxy:
+  t6c_diameter_m: 2.4638 # Hartzell 97 in, T-6A-family proxy
+  blade_count: 4
+  airfoil_label: NACA 16-series-like analytic proxy; real E9612 section unknown
+  root_cutout_r_over_R: 0.20 # proxy spinner/hub
+  blade_angle_at_075R_deg: 29.0 # proxy cruise collective
+  pitch_law: beta(r) = atan(0.75 * tan(29 deg) / (r/R))
+  chord_distribution: estimated, NOT measured from drawing
+  stations_r_over_R_chord_m:
+    - [0.20, 0.170]
+    - [0.30, 0.210]
+    - [0.45, 0.240]
+    - [0.60, 0.220]
+    - [0.75, 0.190]
+    - [0.90, 0.120]
+    - [1.00, 0.045]
+  polar_proxy: "cl=clip(5.7*(alpha_rad+2deg),-1.15,1.15), cd=0.012+0.020*cl^2; alpha grid [-24,24]deg every 2deg; no Mach/Re model"
+  shaft_incidence_deg: 0.0 # provisional FRL shaft alignment
+  rotation_sign: 1 # provisional clockwise as seen by pilot
+  reference_complete_mass_kg: 70.3 # EASA approximate maximum complete prop weight; not measured aircraft mass
+  assumed_blade_mass_fraction: 0.60
+  rotating_inertia_kg_m2: 27.311540731648 # rough uniform-blade/hub-disk mass model
+  nominal_rpm: 2000 # EASA maximum RPM; assumed NP=100% equals this reference, not independently confirmed by FDR
+fdr_reference:
+  mach: 0.25383
+  rho_kg_m3: 1.10681
+  true_airspeed_m_s: 87.953
+  body_alpha_deg: 1.2292929292929293
+  viscosity_pa_s: 1.84e-5
+  wing_sref_m2: 16.28
+  speed_of_sound_m_s: 346.5 # actual demo uses TAS/Mach
+datcom_propwr:
+  AIETLP_deg: 0.0
+  NENGSP: 1
+  THSTCP: 0.0842591285 # estimated BEMT thrust / (0.5*rho*V^2*Sref)
+  PHALOC_global_X_m: -1.9704 # must transform to DATCOM SYNTHS/BODY common datum
+  PHVLOC_global_Z_m: 2.4468 # positive up, use same common datum
+  PRPRAD_m: 1.2319
+  BWAPR3_m: 0.210
+  BWAPR6_m: 0.220
+  BWAPR9_m: 0.120
+  NOPBPE: 4
+  BAPR75_deg: 29.0
+  YP_m: 0.0
+  CROT: false
+  ENGFCT: omitted # DATCOM Fig 12: blade widths provided instead
+bemt_outputs_reference:
+  disk_area_m2: 4.76761067
+  advance_ratio_J: 1.07069678
+  thrust_N: 5872.40172
+  torque_required_Nm: 2850.04926
+  shaft_power_required_W: 596912.921
+  force_body_frd_N: [5872.40172, 0.0, -139.898812]
+  moment_at_cg_body_y_Nm: -1737.12441
+  equivalent_CX_prop: 0.0842591285 # propeller force, not DATCOM power-on delta
+  equivalent_CZ_prop: -0.00200731362
+  equivalent_Cm_prop: -0.0151059549 # includes r x F about proxy CG
+  propeller_CT: 0.129587583 # T/(rho*n^2*D^4); different from THSTCP
+  propeller_CQ: 0.0255266925
+  propeller_CP: 0.160388939 # 2*pi*CQ
+  propulsive_efficiency: 0.865277548 # J*CT/CP
+  max_section_mach: 0.791621285 # no local compressibility correction: large uncertainty
+digital_datcom_power_on_outputs: null # Delta CL, Delta CD, Delta Cm not computed; requires complete DATCOM aircraft case

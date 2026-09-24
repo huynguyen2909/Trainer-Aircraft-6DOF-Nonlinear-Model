@@ -10,6 +10,7 @@ add_library(trainer_aircraft_6dof
     src/config/T6CWingSeed.cpp
     src/config/T6CTailSeed.cpp
     src/config/T6CFuselageSeed.cpp
+    src/config/T6CPropellerSeed.cpp
     src/LoadAccumulator.cpp
     src/TrainerAircraftModel.cpp
     src/RigidBody6DOF.cpp
@@ -59,6 +60,9 @@ if(TRAINER_AIRCRAFT_BUILD_EXAMPLES)
         examples/fuselage_reference_demo.cpp
     )
     target_link_libraries(trainer_aircraft_fuselage_reference_demo PRIVATE trainer_aircraft_6dof)
+    add_executable(trainer_aircraft_t6c_propeller_seed_demo
+        examples/t6c_propeller_seed_demo.cpp)
+    target_link_libraries(trainer_aircraft_t6c_propeller_seed_demo PRIVATE trainer_aircraft_6dof)
 endif()
 
 if(TRAINER_AIRCRAFT_BUILD_TESTS)
@@ -78,6 +82,10 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
         tests/test_propeller.cpp
     )
     target_link_libraries(trainer_aircraft_propeller_tests PRIVATE trainer_aircraft_6dof)
+
+    add_executable(trainer_aircraft_t6c_propeller_seed_tests
+        tests/test_t6c_propeller_seed.cpp)
+    target_link_libraries(trainer_aircraft_t6c_propeller_seed_tests PRIVATE trainer_aircraft_6dof)
 
     add_executable(trainer_aircraft_landing_gear_tests
         tests/test_landing_gear.cpp
@@ -143,6 +151,7 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
     add_test(NAME trainer_aircraft_core_tests COMMAND trainer_aircraft_core_tests)
     add_test(NAME trainer_aircraft_stabilizer_tests COMMAND trainer_aircraft_stabilizer_tests)
     add_test(NAME trainer_aircraft_propeller_tests COMMAND trainer_aircraft_propeller_tests)
+    add_test(NAME trainer_aircraft_t6c_propeller_seed_tests COMMAND trainer_aircraft_t6c_propeller_seed_tests)
     add_test(NAME trainer_aircraft_landing_gear_tests COMMAND trainer_aircraft_landing_gear_tests)
     add_test(NAME trainer_aircraft_main_wing_tests COMMAND trainer_aircraft_main_wing_tests)
     add_test(NAME trainer_aircraft_fuselage_tests COMMAND trainer_aircraft_fuselage_tests)
