@@ -169,9 +169,9 @@
       "provenance": "PROXY: same height; avoids inventing a vertical lever arm"
     },
     "MAC_LE_drawing_x_aft": {
-      "value": 0.266,
+      "value": 3.8725,
       "unit": "m",
-      "provenance": "DRAWING_PROXY: auxiliary datum only"
+      "provenance": "DRAWING corrected global X; fuselage station zero is X=3 m; 266 mm is LE offset, not MAC station"
     },
     "section_slope_viscous_ratio": {
       "value": 0.95,

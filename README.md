@@ -58,5 +58,13 @@ target prints a static wing-only load snapshot using the new configuration.
 
 `WingTailFlowField` plugs into `HorizontalStabilizer` through `ILocalFlowField`.
 It supplies quasi-steady downwash and a wake dynamic-pressure ratio at each evaluation.
-Defaults are identity flow; T-6C tail/downwash seeds await geometry. See
+Generic defaults are identity flow; the provisional seeded factory is described below. See
 [geometry checklist and integration](docs/T6C_WING_TAIL_FLOW_AND_GEOMETRY.md).
+
+## Horizontal-tail calibration seed
+
+`makeT6CHorizontalTailWithDownwash()` constructs the provisional T-6C/PC-9M
+tail with its seeded WingTailFlowField attached. Geometry, coefficient formulas,
+assumptions, and DATCOM references are in
+[the tail seed report](docs/T6C_HORIZONTAL_TAIL_DATCOM_SEED.md).
+Rebuild generated data with `python tools/generate_t6c_tail_seed.py`.

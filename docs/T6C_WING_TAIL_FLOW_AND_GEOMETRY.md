@@ -4,7 +4,7 @@
 
 Bổ sung `WingTailFlowField : ILocalFlowField` cho `HorizontalStabilizer`. Đây là khung dòng khí quasi-steady, trung bình trên đuôi, trong miền góc tấn tuyến tính. Chưa phải bộ seed T-6C, chưa số hóa đồ thị DATCOM. Mặc định epsilon=0, eta=1 tương đương không có wake. Không tự gắn hệ số giả vào factory toàn máy bay.
 
-Không mô hình hóa propwash, ground effect, stall, thời gian truyền wake hoặc phân bố wake theo sải. Hệ số được xác định cho một hình học và miền Mach; vị trí truyền vào interface không làm tự thay đổi hệ số. Khi đổi vị trí đuôi cần tính lại seed. Hình học đuôi T-6C vẫn chưa chốt.
+Không mô hình hóa propwash, ground effect, stall, thời gian truyền wake hoặc phân bố wake theo sải. Hệ số được xác định cho một hình học và miền Mach; vị trí truyền vào interface không làm tự thay đổi hệ số. Khi đổi vị trí đuôi cần tính lại seed. Seed PC-9M/T-6C sơ bộ hiện đã có trong [báo cáo seed đuôi](T6C_HORIZONTAL_TAIL_DATCOM_SEED.md); checklist dưới đây lưu cách đọc hình học và các mục cần kiểm chứng.
 
 ## Luật tính và quy ước
 

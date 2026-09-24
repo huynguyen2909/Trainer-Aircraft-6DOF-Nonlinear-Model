@@ -73,7 +73,7 @@ int main()
                 "PC-9 M proxy wing MAC");
     const auto& macLe = *proxy.geometry.wing.macLeadingEdgeFromDrawingDatumFrdM;
     const auto& cg = *proxy.mass.cgFromDrawingDatumFrdM;
-    requireNear(macLe.x, -0.266, 1.0e-12,
+    requireNear(macLe.x, -3.8725, 1.0e-12,
                 "Drawing aft-positive station must be negative BODY x");
     requireNear(cg.x, macLe.x - 0.30 * *proxy.geometry.wing.meanAerodynamicChordM,
                 1.0e-12, "Assumed CG must lie at 30 percent MAC in BODY FRD");

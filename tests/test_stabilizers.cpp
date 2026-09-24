@@ -1,6 +1,8 @@
 #include "trainer_aircraft/components/ILocalFlowField.hpp"
 #include "trainer_aircraft/components/WingTailFlowField.hpp"
 #include <limits>
+#include "trainer_aircraft/config/T6CTailSeed.hpp"
+#include "trainer_aircraft/config/T6CConfig.hpp"
 #include "trainer_aircraft/components/stabilizers/VATC_HorizontalStabilizer.hpp"
 #include "trainer_aircraft/components/stabilizers/VATC_VerticalStabilizer.hpp"
 #include "trainer_aircraft/integration/RK4Integrator.hpp"
@@ -433,12 +435,46 @@ void testWingTailFlowIntegration()
     }
 }
 
+
+void testT6CTailSeed()
+{
+    using namespace trainer_aircraft;
+    const auto c = makeT6CHorizontalTailSeed();
+    const auto proxy = makeT6CPC9MProxyConfig();
+    const auto body = proxy.positionFromCgBodyM(
+        *proxy.geometry.tail.horizontalAerodynamicCenterFromDrawingDatumFrdM);
+    requireVecNear(*body, {c.PositionWrtCG[0],c.PositionWrtCG[1],c.PositionWrtCG[2]},
+        1e-12, "Seed and proxy tail coordinates agree");
+    requireNear(c.Area, *proxy.geometry.tail.horizontalAreaM2, 1e-12, "Seed and proxy area");
+    requireNear(c.ElevatorArea/c.Area, 0.36, 1e-12, "Full span elevator behind 64 percent hinge");
+    ContextFixture f;
+    f.environment.airDensityKgM3=1.10681;
+    constexpr double alpha=1.2292929292929293*3.14159265358979323846/180.0;
+    f.setAirRelativeVelocity({87.953*std::cos(alpha),0.,87.953*std::sin(alpha)});
+    const auto coupled = makeT6CHorizontalTailWithDownwash();
+    const auto r = coupled->evaluateDetailed(f.context());
+    requireNear(r.liftCoefficient,-0.15663719165575718,1e-10,"Tail seed lift snapshot");
+    requireNear(r.bodyLoad.forceBodyN.z,2276.745754100379,1e-6,"Seed downforce");
+    requireNear(r.bodyLoad.momentAboutCgBodyNm.y,12255.692040084796,1e-6,"Seed pitch moment including vertical drag arm");
+    require(r.bodyLoad.forceBodyN.z>0. && r.bodyLoad.momentAboutCgBodyNm.y>0.,"Tail downforce creates nose-up moment");
+    f.controls.elevatorRad=0.01;
+    const auto deflected=coupled->evaluateDetailed(f.context());
+    require(deflected.liftCoefficient>r.liftCoefficient,"Positive elevator increases lift");
+    require(deflected.bodyLoad.momentAboutCgBodyNm.y<r.bodyLoad.momentAboutCgBodyNm.y,"Positive elevator decreases pitch moment");
+    const auto dw=makeT6CWingTailFlowSeed();
+    f.controls.elevatorRad=0.;
+    f.setAirRelativeVelocity({87.953*std::cos(alpha+1e-5),0.,87.953*std::sin(alpha+1e-5)});
+    requireNear((coupled->evaluateDetailed(f.context()).liftCoefficient-r.liftCoefficient)/1e-5,
+        c.LiftCurveSlope*(1.-dw.downwashGradientPerRad),1e-8,"Seed downwash slope applied once");
+}
+
 } // namespace
 
 int main()
 {
     try
     {
+        testT6CTailSeed();
         testWingTailFlowIntegration();
         testHorizontalLoadAndMomentContract();
         testHorizontalAngularRateAndIntrinsicMoment();

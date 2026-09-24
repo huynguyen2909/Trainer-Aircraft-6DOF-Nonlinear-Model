@@ -1,0 +1,295 @@
+{
+  "inputs": {
+    "span_m": {
+      "value": 3.664,
+      "source": "USER: full tail/elevator span, not 3.100 m balance span"
+    },
+    "root_chord_m": {
+      "value": 1.3,
+      "source": "USER/DRAWING"
+    },
+    "tip_chord_m": {
+      "value": 0.65,
+      "source": "USER/DRAWING"
+    },
+    "reference_MAC_m": {
+      "value": 1.011,
+      "source": "USER/DRAWING: retain rounded reference length"
+    },
+    "hinge_fraction": {
+      "value": 0.64,
+      "source": "USER: unswept hinge; full-span elevator"
+    },
+    "airfoil": {
+      "value": "NACA 0012",
+      "source": "USER simplification, including outboard profile"
+    },
+    "incidence_deg": {
+      "value": -2.0,
+      "source": "USER: relative FRL; zero twist and dihedral"
+    },
+    "balance_span_m": {
+      "value": 3.1,
+      "source": "USER: balance plate, not elevator span; no hinge-moment model"
+    },
+    "wing_MAC_LE_X_m": {
+      "value": 3.8725,
+      "source": "DRAWING corrected: global X aft, not fuselage station zero"
+    },
+    "tail_quarter_MAC_X_m": {
+      "value": 9.7123,
+      "source": "USER/DRAWING global X"
+    },
+    "FRP_FRONT_Z_m": {
+      "value": 2.0,
+      "source": "USER"
+    },
+    "FRP_REAR_Z_m": {
+      "value": 2.045,
+      "source": "USER +45 mm"
+    },
+    "tail_quarter_MAC_Z_m": {
+      "value": 2.645,
+      "source": "USER +600 mm above FRP REAR"
+    },
+    "wing_representative_Z_m": {
+      "value": 2.0,
+      "source": "ASSUMPTION: representative wing plane at FRP FRONT; not measured MAC height"
+    },
+    "CG_Z_m": {
+      "value": 2.0,
+      "source": "ASSUMPTION: retain provisional CG height; 30% MAC does not determine Z"
+    },
+    "CG_MAC_fraction": {
+      "value": 0.3,
+      "source": "USER longitudinal CG assumption"
+    },
+    "Mach": {
+      "value": 0.25383,
+      "source": "same FDR seed as Main Wing; frozen coefficients"
+    },
+    "rho": {
+      "value": 1.10681,
+      "source": "same wing seed"
+    },
+    "TAS": {
+      "value": 87.953,
+      "source": "same wing seed"
+    },
+    "mu": {
+      "value": 1.84e-05,
+      "source": "same wing seed"
+    },
+    "body_alpha_deg": {
+      "value": 1.2292929292929293,
+      "source": "same wing seed; sensor/body bias assumed zero"
+    },
+    "section_slope_ratio": {
+      "value": 0.95,
+      "source": "ENGINEERING: viscous reduction of 2*pi"
+    },
+    "oswald_e": {
+      "value": 0.85,
+      "source": "ENGINEERING prior"
+    },
+    "elevator_effectiveness_ratio": {
+      "value": 0.85,
+      "source": "ENGINEERING correction to thin-airfoil flap effectiveness"
+    },
+    "wake_dynamic_pressure_ratio": {
+      "value": 0.95,
+      "source": "ENGINEERING prior, not DATCOM wake chart evaluation; no propwash"
+    },
+    "elevator_limits_deg": {
+      "value": [
+        -25.0,
+        20.0
+      ],
+      "source": "ENGINEERING mechanical proxy: up negative/down positive, awaiting FCS confirmation"
+    },
+    "elevator_increment_arm_chord": {
+      "value": 0.25,
+      "source": "ENGINEERING lift-increment arm behind AC; not hinge moment"
+    }
+  },
+  "results": [
+    {
+      "parameter": "S_h",
+      "value": 3.5724000000000005,
+      "formula": "b*(cr+ct)/2",
+      "reference": "Geometry: projected trapezoid includes fuselage patch, neutral elevator"
+    },
+    {
+      "parameter": "AR_h",
+      "value": 3.7579487179487177,
+      "formula": "b^2/S",
+      "reference": "DATCOM 2.2.2 / PDF 235-237"
+    },
+    {
+      "parameter": "MAC_geometric",
+      "value": 1.011111111111111,
+      "formula": "2*cr/3*(1+lambda+lambda^2)/(1+lambda)",
+      "reference": "2.2.2 / PDF 235"
+    },
+    {
+      "parameter": "y_MAC",
+      "value": 0.8142222222222223,
+      "formula": "b/6*(1+2*lambda)/(1+lambda)",
+      "reference": "trapezoid geometry"
+    },
+    {
+      "parameter": "sweep_LE_deg",
+      "value": 12.793451459995573,
+      "formula": "atan(hinge*(cr-ct)/(b/2))",
+      "reference": "unswept hinge geometry"
+    },
+    {
+      "parameter": "sweep_quarter_deg",
+      "value": 7.878182178894532,
+      "formula": "atan((hinge-.25)*(cr-ct)/(b/2))",
+      "reference": "geometry"
+    },
+    {
+      "parameter": "CLalpha_h",
+      "value": 3.734973199676297,
+      "formula": "2*pi*A/[2+sqrt(4+(A*B/kappa)^2*(1+tan(L50)^2/B^2))]",
+      "reference": "DATCOM Fig 4.1.3.2-49 / PDF 549; kappa assumed"
+    },
+    {
+      "parameter": "tau_e",
+      "value": 0.6079565671145,
+      "formula": "0.85*[1-(theta-sin(theta))/pi], theta=acos(2*ce/c-1)",
+      "reference": "Thin-airfoil engineering proxy; not digitized DATCOM elevator charts"
+    },
+    {
+      "parameter": "CLdelta_e",
+      "value": 2.2707014847398614,
+      "formula": "a_h*tau_e",
+      "reference": "per rad, tail-area normalization"
+    },
+    {
+      "parameter": "Cmdelta_e_AC",
+      "value": -0.5676753711849654,
+      "formula": "-increment_arm*CLdelta_e",
+      "reference": "ENGINEERING proxy about tail AC; CG transfer separate"
+    },
+    {
+      "parameter": "CD0_h",
+      "value": 0.007934334050231204,
+      "formula": "Cf*(1+1.2*t/c+100*(t/c)^4)*Swet/S; Swet=2*(1+.25*t/c)*S",
+      "reference": "DATCOM 4.1.5.1-a / PDF 723 + analytic Cf proxy, fully turbulent, full tail exposed proxy"
+    },
+    {
+      "parameter": "induced_drag_factor",
+      "value": 0.09965069966259824,
+      "formula": "1/(pi*A*e)",
+      "reference": "DATCOM polar 4.1.5.2 / PDF 757; e assumed"
+    },
+    {
+      "parameter": "l_H",
+      "value": 5.421464729649727,
+      "formula": "dx*cos(iw)-dz*sin(iw)",
+      "reference": "distance parallel wing root chord; representative root-plane proxy"
+    },
+    {
+      "parameter": "h_H",
+      "value": 0.6923369664867154,
+      "formula": "dx*sin(iw)+dz*cos(iw)",
+      "reference": "height normal to root chord plane; magnitude used in KH"
+    },
+    {
+      "parameter": "KA",
+      "value": 0.11686130834593966,
+      "formula": "1/A-1/(1+A^1.7)",
+      "reference": "DATCOM Fig 4.4.1-69a / PDF 1271"
+    },
+    {
+      "parameter": "Klambda",
+      "value": 1.1686930091185412,
+      "formula": "(10-3*lambda)/7",
+      "reference": "DATCOM Fig 4.4.1-69b / PDF 1271"
+    },
+    {
+      "parameter": "KH",
+      "value": 0.9105517662518394,
+      "formula": "(1-abs(h/b))/(2*l/b)^(1/3)",
+      "reference": "DATCOM Fig 4.4.1-70 / PDF 1272"
+    },
+    {
+      "parameter": "epsilon_alpha",
+      "value": 0.3803837046112977,
+      "formula": "4.44*(KA*Klambda*KH*sqrt(cos(L25)))^1.19 * aw(M)/aw(0)",
+      "reference": "DATCOM 4.4.1-h,i / PDF 1209; equivalent straight-tapered wing; geometry uncertainty"
+    },
+    {
+      "parameter": "epsilon_ref_rad",
+      "value": 0.02848659342042803,
+      "formula": "epsilon_alpha*CLwing/aw",
+      "reference": "ENGINEERING zero-lift anchor; Method 2 supplies gradient only"
+    },
+    {
+      "parameter": "epsilon_flap",
+      "value": 0.08881536226609699,
+      "formula": "epsilon_alpha/aw * dCLwing/dflap at zero",
+      "reference": "ENGINEERING local split-flap coupling only near flap Up; not validated at large flap"
+    }
+  ],
+  "tail": {
+    "Area": 3.5724000000000005,
+    "TailSpan": 3.664,
+    "TailMAC": 1.011,
+    "TailAR": 3.7579487179487177,
+    "IncidenceAngle": -0.03490658503988659,
+    "MomentArm": 5.344800000000001,
+    "ElevatorArea": 1.286064,
+    "LiftCurveSlope": 3.734973199676297,
+    "ZeroLiftAngle": 0.0,
+    "ZeroLiftDragCoefficient": 0.007934334050231204,
+    "InducedDragFactor": 0.09965069966259824,
+    "ElevatorEffectiveness": 0.6079565671145,
+    "PitchMomentCoefficient": 0.0,
+    "PitchMomentCurveSlope": 0.0,
+    "ElevatorPitchMomentEffectiveness": -0.5676753711849654
+  },
+  "position_body_m": [
+    -5.344800000000001,
+    0.0,
+    -0.645
+  ],
+  "elevator_limits_rad": [
+    -0.4363323129985824,
+    0.3490658503988659
+  ],
+  "flow": {
+    "referenceBodyAlphaRad": 0.021455209087647465,
+    "referenceDownwashRad": 0.02848659342042803,
+    "downwashGradientPerRad": 0.3803837046112977,
+    "referenceFlapRad": 0.0,
+    "flapDownwashGradientPerRad": 0.08881536226609699,
+    "dynamicPressureRatio": 0.95
+  },
+  "coordinates": {
+    "wing_MAC_LE_X": 3.8725,
+    "wing_quarter_X": 4.285,
+    "CG_X": 4.3675,
+    "CG_Z": 2.0,
+    "wing_Z": 2.0,
+    "tail_X": 9.7123,
+    "tail_Z": 2.645
+  },
+  "snapshot": {
+    "CL": -0.15663719165575718,
+    "CD": 0.010379284874146657,
+    "epsilon_deg": 1.632161575695666,
+    "force_body_N": [
+      -134.79276522338813,
+      0.0,
+      2276.745754100379
+    ],
+    "moment_CG_Nm": [
+      0.0,
+      12255.692040084796,
+      0.0
+    ]
+  }
+}

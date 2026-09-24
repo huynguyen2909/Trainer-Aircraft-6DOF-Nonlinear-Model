@@ -52,7 +52,7 @@ DATCOM là AFWAL-TR-83-3048. `PDF` là thứ tự trang trong bản 3134 trang; 
 | `h_CG` | 0.3 | MAC | USER_ASSUMPTION: CG; positive aft |
 | `h_aero` | 0.25 | MAC | PROXY: quarter-MAC aerodynamic center |
 | `z_aero_minus_CG` | 0 | m | PROXY: same height; avoids inventing a vertical lever arm |
-| `MAC_LE_drawing_x_aft` | 0.266 | m | DRAWING_PROXY: auxiliary datum only |
+| `MAC_LE_drawing_x_aft` | 3.8725 | m | DRAWING corrected global X; fuselage station zero is X=3 m; 266 mm is LE offset, not MAC station |
 | `section_slope_viscous_ratio` | 0.95 | - | PROXY: 5% reduction from 2*pi; not measured polar |
 | `oswald_e` | 0.82 | - | PROXY: moderate AR tapered wing; includes viscous drag-due-to-lift |
 | `surface_roughness_height` | 6.35e-06 | m | PROXY: smooth painted surface scenario |

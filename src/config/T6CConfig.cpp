@@ -55,10 +55,10 @@ T6CConfig makeT6CPC9MProxyConfig()
     // Pilatus PC-9 M model-building plan, page 5, in metres. Its drawing
     // coordinates are +X aft, +Y aircraft right, +Z up. BODY is FRD, so
     // (x, y, z)_FRD = (-X, +Y, -Z)_drawing for vectors from the drawing
-    // origin D. The drawing's X=0 wing station, Y=0 symmetry plane and Z=0
-    // reference line define D. BODY itself is always centered at CG:
+    // origin D. D is the global drawing origin; fuselage station zero is
+    // X=3.000 m aft of D. BODY itself is always centered at CG:
     // r_(CG->P)^B = r_(D->P)^B - r_(D->CG)^B.
-    constexpr double wingMacLeadingEdgeAftOfDrawingDatumM = 0.266;
+    constexpr double wingMacLeadingEdgeAftOfDrawingDatumM = 3.8725;
     constexpr double wingMacM = 1.650;
     constexpr double assumedCgFractionOfMac = 0.30;
     constexpr double assumedCgAboveDrawingZZeroM = 2.000;
@@ -79,6 +79,12 @@ T6CConfig makeT6CPC9MProxyConfig()
         Vec3{-(wingMacLeadingEdgeAftOfDrawingDatumM +
                assumedCgFractionOfMac * wingMacM),
              0.0, -assumedCgAboveDrawingZZeroM};
+
+    config.geometry.tail.horizontalAreaM2 = 3.5724;
+    config.geometry.tail.horizontalSpanM = 3.664;
+    config.geometry.tail.horizontalMeanAerodynamicChordM = 1.011;
+    config.geometry.tail.horizontalAerodynamicCenterFromDrawingDatumFrdM =
+        Vec3{-9.7123, 0.0, -2.645};
 
     return config;
 }

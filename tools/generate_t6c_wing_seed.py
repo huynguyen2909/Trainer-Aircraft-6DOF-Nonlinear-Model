@@ -67,7 +67,7 @@ def build():
     hcg = inp('h_CG', 0.30, 'MAC', 'USER_ASSUMPTION: CG; positive aft')
     hac = inp('h_aero', 0.25, 'MAC', 'PROXY: quarter-MAC aerodynamic center')
     inp('z_aero_minus_CG', 0.0, 'm', 'PROXY: same height; avoids inventing a vertical lever arm')
-    inp('MAC_LE_drawing_x_aft', 0.266, 'm', 'DRAWING_PROXY: auxiliary datum only')
+    inp('MAC_LE_drawing_x_aft', 3.8725, 'm', 'DRAWING corrected global X; fuselage station zero is X=3 m; 266 mm is LE offset, not MAC station')
     visc = inp('section_slope_viscous_ratio', 0.95, '-', 'PROXY: 5% reduction from 2*pi; not measured polar')
     e = inp('oswald_e', 0.82, '-', 'PROXY: moderate AR tapered wing; includes viscous drag-due-to-lift')
     rough = inp('surface_roughness_height', 6.35e-6, 'm', 'PROXY: smooth painted surface scenario')

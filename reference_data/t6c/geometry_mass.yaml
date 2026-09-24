@@ -80,7 +80,7 @@ unresolved_geometry:
 provisional_pc9m_proxy:
   source: pilatus_pc9m_model_building_plan
   drawing_datum:
-    description: Intersection of drawing X=0 wing station, Y=0 aircraft symmetry plane and Z=0 drawing reference line
+    description: Global drawing X/Z origin and symmetry plane; fuselage station zero is at X=3.000 m
     axes: {x: aft, y: aircraft_right, z: up}
     unit: m
   model_body_frame:
@@ -91,16 +91,19 @@ provisional_pc9m_proxy:
     translation: 'position_from_cg_body_m = position_from_drawing_datum_resolved_in_frd_m - cg_from_drawing_datum_resolved_in_frd_m'
   wing_mac:
     length_m: 1.650
-    leading_edge_x_aft_of_drawing_datum_m: 0.266
-    leading_edge_from_drawing_datum_resolved_in_frd_m: {x: -0.266, y: 0.0, z: -2.0}
+    leading_edge_x_aft_of_drawing_datum_m: 3.8725
+    leading_edge_from_drawing_datum_resolved_in_frd_m: {x: -3.8725, y: 0.0, z: -2.0}
     leading_edge_from_cg_body_m: {x: 0.495, y: 0.0, z: 0.0}
     source: pilatus_pc9m_model_building_plan
     note: Z at the MAC leading edge is provisionally placed on the 2.000 m drawing reference plane; its T-6C installation height is unverified.
   estimated_cg:
     fraction_of_mac_from_le: 0.30
-    x_aft_of_drawing_datum_m: 0.761
-    from_drawing_datum_resolved_in_frd_m: {x: -0.761, y: 0.0, z: -2.0}
+    x_aft_of_drawing_datum_m: 4.3675
+    from_drawing_datum_resolved_in_frd_m: {x: -4.3675, y: 0.0, z: -2.0}
     from_cg_body_m: {x: 0.0, y: 0.0, z: 0.0}
     source: assumed_30_percent_pc9m_mac
     note: Y=0 assumes lateral symmetry; Z=2.000 m above the drawing reference line assumes the CG lies in the wing reference plane. Neither CG nor MAC Z is measured on a T-6C.
   intended_factory: makeT6CPC9MProxyConfig
+
+# Horizontal tail populated only in the provisional proxy, not public baseline.
+# See tail_datcom_seed.yaml for complete geometry, provenance and aero seed.

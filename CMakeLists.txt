@@ -8,6 +8,7 @@ option(TRAINER_AIRCRAFT_BUILD_EXAMPLES "Build examples" ON)
 add_library(trainer_aircraft_6dof
     src/config/T6CConfig.cpp
     src/config/T6CWingSeed.cpp
+    src/config/T6CTailSeed.cpp
     src/LoadAccumulator.cpp
     src/TrainerAircraftModel.cpp
     src/RigidBody6DOF.cpp

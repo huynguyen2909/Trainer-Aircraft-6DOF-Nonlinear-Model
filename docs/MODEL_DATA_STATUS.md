@@ -20,12 +20,12 @@ https://defense.txtav.com/en/t-6c (accessed 2026-09-23).
 
 `makeT6CPC9MProxyConfig()` uses Pilatus' PC-9 M Model Building Plan,
 PDF page 5, as a separate initial geometry hypothesis. The auxiliary drawing origin D is
-the intersection of its X=0 wing station, Y=0 symmetry plane and Z=0 reference
-line. BODY is CG-origin FRD, so `r_CG^B = (0, 0, 0) m`. Drawing axes (+X aft,
+the global drawing X/Z origin on the symmetry plane. Fuselage station zero
+is 3.000 m aft of this origin. BODY is CG-origin FRD, so `r_CG^B = (0, 0, 0) m`. Drawing axes (+X aft,
 +Y aircraft right, +Z up) map to FRD directions `(-X, +Y, -Z)`; component
 positions in BODY must also subtract the D-to-CG vector. The plan shows a
-1.650 m wing MAC with its leading edge 0.266 m aft of X=0. An assumed CG at
-30% MAC lies 0.761 m aft of X=0, making `r_(D->CG)^FRD=(-0.761,0,-2.000) m`
+1.650 m wing MAC with its leading edge 3.8725 m aft of X=0. An assumed CG at
+30% MAC lies 4.3675 m aft of X=0, making `r_(D->CG)^FRD=(-4.3675,0,-2.000) m`
 and `r_(CG->MAC_LE)^B=(+0.495,0,0) m`. The y=0 and z=-2.000 m source offsets
 assume symmetry and a CG at the wing reference level; neither is a measured
 T-6C CG. The document expressly restricts its drawing to model aircraft.
@@ -39,7 +39,7 @@ The wing-only seed is now executable through `makeT6CWingCalibrationSeed()`.
 DATCOM-derived quantities, explicit engineering proxies, and the generated
 runtime configuration. It does not claim measured coefficients or an FDR fit.
 The public baseline above and `makeT6CPC9MProxyConfig()` still preserve their
-original source-backed dimensions; the separate calibration wing uses a
+public source dimensions; the separate calibration wing uses a
 10.124 m PC-9M span and an area-normalized planform.
 
 See [the full seed tables](T6C_MAIN_WING_DATCOM_SEED.md) for numerical values,
@@ -63,3 +63,9 @@ Before enabling complete-aircraft simulation, record controlled-source values
 for the missing items above, reconcile body axes and datum definitions, and add
 range/consistency tests. Only then map the geometry into DATCOM inputs and add
 estimated aerodynamic derivatives as a separate, traceable layer.
+
+Horizontal-tail seed and coupled WingTailFlow factory now exist; see
+[T6C_HORIZONTAL_TAIL_DATCOM_SEED.md](T6C_HORIZONTAL_TAIL_DATCOM_SEED.md).
+Tail quarter-MAC is (-9.7123,0,-2.645) m from the drawing datum in FRD.
+Wing/CG height remains a 2.000 m proxy. Public baseline is unchanged;
+vertical tail and maneuver mass/inertia remain incomplete.
