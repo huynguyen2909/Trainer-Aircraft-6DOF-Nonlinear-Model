@@ -132,6 +132,20 @@
       "cs_fstd_2c5_tolerance_deg": null
     }
   ],
+  "trim_predictions_with_free_propeller_scale": {
+    "before_aero_calibration": {
+      "pitch_angle_deg": 1.9820141287920197,
+      "elevator_angle_deg": 1.7465635196025864,
+      "net_thrust_n": 1639.4163957421686,
+      "propeller_effective_scale": 0.2762117965596155
+    },
+    "after_aero_calibration": {
+      "pitch_angle_deg": 1.6363636363636365,
+      "elevator_angle_deg": -0.6757575757575758,
+      "net_thrust_n": 1707.5060327090152,
+      "propeller_effective_scale": 0.2879371480879906
+    }
+  },
   "balance_residual_normalized": [
     1.7830770587148737e-15,
     -1.8113798691706654e-16,

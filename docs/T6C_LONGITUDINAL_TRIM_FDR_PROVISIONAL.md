@@ -77,6 +77,10 @@ sai số so với FDR**.
 | Net thrust | **không đo** | 1.639,42 N suy ra | 1.707,51 N suy ra | Không có ngưỡng net thrust trong **Issue 1 năm 2026** |
 
 *Giả sử số `ELEVPOS1` là độ và quy ước dấu khớp với input C++.*
+Ở cột “Trước”, trình giải trim đã chọn scale thrust **0,276212** để giữ
+bay bằng với hai hệ số aero wing còn nguyên seed; con số 1,000000 trong bảng
+parameter là **seed** trước khi giải trim, không phải giá trị điều khiển ở
+điểm trim trước hiệu chỉnh. Sau hiệu chỉnh, scale trim là **0,287937**.
 
 Propeller cố định blade pitch ở seed có thrust BEMT lớn hơn lực đẩy cần ở
 cruise: thay đổi scale −71% cho thấy cần governor/collective/power map,

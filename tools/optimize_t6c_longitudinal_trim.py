@@ -190,7 +190,11 @@ def main():
                                    "pitchingMomentZero", "pitchingMomentSlopePerRad"],
                       "vertical_tail": ["ZeroLiftDragCoefficient (no validated T6C seed)"],
                       "propeller": ["blade pitch, chord/polar, rotation rate or calibrated thrust-vs-power map (requires engine data)"]},
-                  "results": comparisons, "balance_residual_normalized": residual(sol.x).tolist(),
+                  "results": comparisons,
+                  "trim_predictions_with_free_propeller_scale": {
+                      "before_aero_calibration": baseline,
+                      "after_aero_calibration": optimized},
+                  "balance_residual_normalized": residual(sol.x).tolist(),
                   "optimizer": {"method": "scipy.optimize.least_squares", "success": bool(sol.success),
                                 "message": sol.message, "nfev": sol.nfev, "bridge_evaluations": bridge.calls},
                   "limitations": ["No FDR net-thrust measurement: computed thrust is a model-inferred requirement, not a matched target.",
