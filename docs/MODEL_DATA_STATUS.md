@@ -69,3 +69,11 @@ Horizontal-tail seed and coupled WingTailFlow factory now exist; see
 Tail quarter-MAC is (-9.7123,0,-2.645) m from the drawing datum in FRD.
 Wing/CG height remains a 2.000 m proxy. Public baseline is unchanged;
 vertical tail and maneuver mass/inertia remain incomplete.
+
+The body-alone fuselage seed is available from
+`makeT6CFuselageWithDatcomSeed()`, separately from the historical Nicolosi
+reference. [The fuselage seed report](T6C_FUSELAGE_DATCOM_SEED.md) records
+station-by-station visual estimates from the PC-9M drawing, DATCOM-derived
+normal force/pitch slope and near-zero-angle drag. Its wing-body interference,
+body asymmetry, lateral derivatives and verified mass properties remain open;
+this does not change the public baseline's simulation-ready status.

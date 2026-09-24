@@ -1,0 +1,309 @@
+{
+  "source": "PC-9-M-Model-Building-Plan.pdf, side and plan view; visual readings",
+  "inputs": {
+    "CG_X_m": 4.3675,
+    "CG_Z_m": 2.0,
+    "reference_area_m2": 16.28,
+    "reference_MAC_m": 1.65,
+    "apparent_mass_factor_proxy": 0.94,
+    "x0_selection": "end of first strongest falling-area interval",
+    "body_cross_section": "ellipse fitted to estimated side/top silhouettes",
+    "body_Mach_reference": 0.25383,
+    "rho_kgm3": 1.10681,
+    "TAS_mps": 87.953,
+    "viscosity_Pa_s": 1.84e-05,
+    "alpha_reference_rad": 0.021455209087647465
+  },
+  "stations": [
+    {
+      "x_m": 0.55,
+      "fuselage_station_m": -2.45,
+      "z_upper_m": 2.36,
+      "z_lower_m": 2.34,
+      "breadth_m": 0.02,
+      "area_m2": 0.00031415926535897963,
+      "perimeter_m": 0.06283185307179592,
+      "centroid_z_m": 2.3499999999999996,
+      "source": "spinner tip / visual"
+    },
+    {
+      "x_m": 1.1,
+      "fuselage_station_m": -1.9,
+      "z_upper_m": 2.58,
+      "z_lower_m": 2.22,
+      "breadth_m": 0.38,
+      "area_m2": 0.10744246875277087,
+      "perimeter_m": 1.1626015612939133,
+      "centroid_z_m": 2.4000000000000004,
+      "source": "spinner aft / visual"
+    },
+    {
+      "x_m": 1.65,
+      "fuselage_station_m": -1.35,
+      "z_upper_m": 2.68,
+      "z_lower_m": 1.77,
+      "breadth_m": 0.68,
+      "area_m2": 0.48600438351034114,
+      "perimeter_m": 2.5106485625432957,
+      "centroid_z_m": 2.225,
+      "source": "cowling / visual"
+    },
+    {
+      "x_m": 2.35,
+      "fuselage_station_m": -0.6499999999999999,
+      "z_upper_m": 2.76,
+      "z_lower_m": 1.66,
+      "breadth_m": 0.82,
+      "area_m2": 0.7084291433844981,
+      "perimeter_m": 3.031985530965824,
+      "centroid_z_m": 2.21,
+      "source": "cowling / visual"
+    },
+    {
+      "x_m": 3.0,
+      "fuselage_station_m": 0.0,
+      "z_upper_m": 2.8,
+      "z_lower_m": 1.61,
+      "breadth_m": 0.91,
+      "area_m2": 0.8505076711430967,
+      "perimeter_m": 3.3133493780260084,
+      "centroid_z_m": 2.205,
+      "source": "SP/FR 0 / visual"
+    },
+    {
+      "x_m": 3.375,
+      "fuselage_station_m": 0.375,
+      "z_upper_m": 3.02,
+      "z_lower_m": 1.58,
+      "breadth_m": 0.95,
+      "area_m2": 1.0744246875277093,
+      "perimeter_m": 3.7937580582682884,
+      "centroid_z_m": 2.3,
+      "source": "SP/FR 1a / visual"
+    },
+    {
+      "x_m": 3.7475,
+      "fuselage_station_m": 0.7475,
+      "z_upper_m": 3.24,
+      "z_lower_m": 1.57,
+      "breadth_m": 0.97,
+      "area_m2": 1.2722664848875267,
+      "perimeter_m": 4.220112751179307,
+      "centroid_z_m": 2.4050000000000002,
+      "source": "SP/FR 2 / visual"
+    },
+    {
+      "x_m": 4.12,
+      "fuselage_station_m": 1.12,
+      "z_upper_m": 3.4,
+      "z_lower_m": 1.57,
+      "breadth_m": 0.99,
+      "area_m2": 1.422905852627157,
+      "perimeter_m": 4.528454984581822,
+      "centroid_z_m": 2.485,
+      "source": "SP/FR 2a / visual"
+    },
+    {
+      "x_m": 4.4855,
+      "fuselage_station_m": 1.4855,
+      "z_upper_m": 3.46,
+      "z_lower_m": 1.59,
+      "breadth_m": 1.01,
+      "area_m2": 1.4833815112087605,
+      "perimeter_m": 4.625309105846599,
+      "centroid_z_m": 2.525,
+      "source": "SP/FR 3 / visual"
+    },
+    {
+      "x_m": 4.826,
+      "fuselage_station_m": 1.8259999999999996,
+      "z_upper_m": 3.48,
+      "z_lower_m": 1.61,
+      "breadth_m": 1.01,
+      "area_m2": 1.4833815112087605,
+      "perimeter_m": 4.625309105846599,
+      "centroid_z_m": 2.545,
+      "source": "SP/FR 3a / visual"
+    },
+    {
+      "x_m": 5.281,
+      "fuselage_station_m": 2.2809999999999997,
+      "z_upper_m": 3.43,
+      "z_lower_m": 1.63,
+      "breadth_m": 0.99,
+      "area_m2": 1.399579527174253,
+      "perimeter_m": 4.475361051229714,
+      "centroid_z_m": 2.5300000000000002,
+      "source": "SP/FR 3c / visual"
+    },
+    {
+      "x_m": 5.545,
+      "fuselage_station_m": 2.545,
+      "z_upper_m": 3.38,
+      "z_lower_m": 1.65,
+      "breadth_m": 0.98,
+      "area_m2": 1.3315640462240337,
+      "perimeter_m": 4.338762435722921,
+      "centroid_z_m": 2.5149999999999997,
+      "source": "SP/FR 3d / visual"
+    },
+    {
+      "x_m": 5.965,
+      "fuselage_station_m": 2.965,
+      "z_upper_m": 3.21,
+      "z_lower_m": 1.7,
+      "breadth_m": 0.95,
+      "area_m2": 1.1266536653936396,
+      "perimeter_m": 3.9143833127003673,
+      "centroid_z_m": 2.455,
+      "source": "SP/FR 4 / visual"
+    },
+    {
+      "x_m": 6.648,
+      "fuselage_station_m": 3.6479999999999997,
+      "z_upper_m": 3.03,
+      "z_lower_m": 1.88,
+      "breadth_m": 0.89,
+      "area_m2": 0.8038550202372883,
+      "perimeter_m": 3.217450714340832,
+      "centroid_z_m": 2.455,
+      "source": "SP/FR 5 / visual"
+    },
+    {
+      "x_m": 7.148,
+      "fuselage_station_m": 4.148,
+      "z_upper_m": 2.99,
+      "z_lower_m": 2.0,
+      "breadth_m": 0.78,
+      "area_m2": 0.6064844617755096,
+      "perimeter_m": 2.7901023189670684,
+      "centroid_z_m": 2.495,
+      "source": "SP/FR 6 / visual"
+    },
+    {
+      "x_m": 7.768,
+      "fuselage_station_m": 4.768,
+      "z_upper_m": 2.94,
+      "z_lower_m": 2.12,
+      "breadth_m": 0.63,
+      "area_m2": 0.40573669121112166,
+      "perimeter_m": 2.2874420412379877,
+      "centroid_z_m": 2.5300000000000002,
+      "source": "SP/FR 7 / visual"
+    },
+    {
+      "x_m": 8.22,
+      "fuselage_station_m": 5.220000000000001,
+      "z_upper_m": 2.91,
+      "z_lower_m": 2.2,
+      "breadth_m": 0.54,
+      "area_m2": 0.3011216558465817,
+      "perimeter_m": 1.972585131156983,
+      "centroid_z_m": 2.555,
+      "source": "SP/FR 8 / visual"
+    },
+    {
+      "x_m": 8.68,
+      "fuselage_station_m": 5.68,
+      "z_upper_m": 2.86,
+      "z_lower_m": 2.29,
+      "breadth_m": 0.44,
+      "area_m2": 0.19697785938007997,
+      "perimeter_m": 1.5930820133788295,
+      "centroid_z_m": 2.575,
+      "source": "SP/FR 9 / visual"
+    },
+    {
+      "x_m": 9.2,
+      "fuselage_station_m": 6.199999999999999,
+      "z_upper_m": 2.79,
+      "z_lower_m": 2.37,
+      "breadth_m": 0.34,
+      "area_m2": 0.11215485773315562,
+      "perimeter_m": 1.1971144413013004,
+      "centroid_z_m": 2.58,
+      "source": "SP/FR 10 / visual"
+    },
+    {
+      "x_m": 9.48,
+      "fuselage_station_m": 6.48,
+      "z_upper_m": 2.75,
+      "z_lower_m": 2.41,
+      "breadth_m": 0.28,
+      "area_m2": 0.07476990515543705,
+      "perimeter_m": 0.97617524705138,
+      "centroid_z_m": 2.58,
+      "source": "SP/FR 11 / visual"
+    },
+    {
+      "x_m": 9.95,
+      "fuselage_station_m": 6.949999999999999,
+      "z_upper_m": 2.69,
+      "z_lower_m": 2.49,
+      "breadth_m": 0.17,
+      "area_m2": 0.02670353755551321,
+      "perimeter_m": 0.5821502477014879,
+      "centroid_z_m": 2.59,
+      "source": "afterbody / visual"
+    },
+    {
+      "x_m": 10.3,
+      "fuselage_station_m": 7.300000000000001,
+      "z_upper_m": 2.65,
+      "z_lower_m": 2.62,
+      "breadth_m": 0.04,
+      "area_m2": 0.0009424777960769319,
+      "perimeter_m": 0.11051745895458343,
+      "centroid_z_m": 2.635,
+      "source": "aft cone closure / proxy"
+    }
+  ],
+  "geometry": {
+    "length_m": 9.75,
+    "volume_m3": 6.721518083841881,
+    "wetted_area_m2": 26.830128969702262,
+    "max_equivalent_diameter_m": 1.3742998217274132,
+    "fineness_ratio": 7.0945217672697,
+    "max_cross_section_m2": 1.4833815112087605,
+    "x1_m": 5.965,
+    "x0_m": 5.965,
+    "S_x0_m2": 1.1266536653936396
+  },
+  "results": {
+    "CN_alpha_per_rad": 0.13010496873096083,
+    "Cm_alpha_CG_per_rad": 0.22293111991733996,
+    "Cm0_CG": 0.0,
+    "CD0_at_reference": 0.004543662710926037,
+    "Re_ref": 51583466.53899457,
+    "Cf_ref": 0.0023250876119042755,
+    "crossflow_drag_alpha_increment": 0.0,
+    "body_lift_zero": 0.0
+  },
+  "runtime_config": {
+    "referenceAreaM2": 16.28,
+    "referenceChordM": 1.65,
+    "bodyLengthM": 9.75,
+    "wettedAreaM2": 26.830128969702262,
+    "formFactor": 1.1857643878561757,
+    "baseDragCoefficient": 0.0,
+    "normalForceSlopePerRad": 0.13010496873096083,
+    "pitchingMomentZero": 0.0,
+    "pitchingMomentSlopePerRad": 0.22293111991733996
+  },
+  "snapshot": {
+    "alpha_rad": 0.021455209087647465,
+    "CD0": 0.004543662710926037,
+    "CN": 0.0027914293074646,
+    "CmCG": 0.004783033789969939,
+    "force_body_N": [
+      -316.5956277748822,
+      0.0,
+      -201.34106646132892
+    ],
+    "moment_CG_Nm": [
+      0.0,
+      550.0297589501607,
+      0.0
+    ]
+  }
+}

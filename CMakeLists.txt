@@ -9,6 +9,7 @@ add_library(trainer_aircraft_6dof
     src/config/T6CConfig.cpp
     src/config/T6CWingSeed.cpp
     src/config/T6CTailSeed.cpp
+    src/config/T6CFuselageSeed.cpp
     src/LoadAccumulator.cpp
     src/TrainerAircraftModel.cpp
     src/RigidBody6DOF.cpp
@@ -19,6 +20,7 @@ add_library(trainer_aircraft_6dof
     src/components/stabilizers/VATC_VerticalStabilizer.cpp
     src/components/fuselage/FuselageComponent.cpp
     src/components/fuselage/FuselageAerodynamics.cpp
+    src/components/fuselage/DatcomFuselageComponent.cpp
     src/components/landing_gear/LandingGearComponent.cpp
     src/components/wings/VATC_MainWing.cpp
     src/components/propeller/PropellerModel.cpp
@@ -92,6 +94,11 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
     )
     target_link_libraries(trainer_aircraft_fuselage_tests PRIVATE trainer_aircraft_6dof)
 
+    add_executable(trainer_aircraft_t6c_fuselage_seed_tests
+        tests/test_t6c_fuselage_seed.cpp
+    )
+    target_link_libraries(trainer_aircraft_t6c_fuselage_seed_tests PRIVATE trainer_aircraft_6dof)
+
     add_executable(trainer_aircraft_t6c_config_tests
         tests/test_t6c_config.cpp
     )
@@ -104,6 +111,7 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
         target_compile_options(trainer_aircraft_landing_gear_tests PRIVATE /W4 /permissive-)
         target_compile_options(trainer_aircraft_main_wing_tests PRIVATE /W4 /permissive-)
         target_compile_options(trainer_aircraft_fuselage_tests PRIVATE /W4 /permissive-)
+        target_compile_options(trainer_aircraft_t6c_fuselage_seed_tests PRIVATE /W4 /permissive-)
         target_compile_options(trainer_aircraft_t6c_config_tests PRIVATE /W4 /permissive-)
     else()
         target_compile_options(trainer_aircraft_core_tests PRIVATE
@@ -124,6 +132,9 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
         target_compile_options(trainer_aircraft_fuselage_tests PRIVATE
             -Wall -Wextra -Wpedantic -Wconversion -Wshadow
         )
+        target_compile_options(trainer_aircraft_t6c_fuselage_seed_tests PRIVATE
+            -Wall -Wextra -Wpedantic -Wconversion -Wshadow
+        )
         target_compile_options(trainer_aircraft_t6c_config_tests PRIVATE
             -Wall -Wextra -Wpedantic -Wconversion -Wshadow
         )
@@ -135,5 +146,6 @@ if(TRAINER_AIRCRAFT_BUILD_TESTS)
     add_test(NAME trainer_aircraft_landing_gear_tests COMMAND trainer_aircraft_landing_gear_tests)
     add_test(NAME trainer_aircraft_main_wing_tests COMMAND trainer_aircraft_main_wing_tests)
     add_test(NAME trainer_aircraft_fuselage_tests COMMAND trainer_aircraft_fuselage_tests)
+    add_test(NAME trainer_aircraft_t6c_fuselage_seed_tests COMMAND trainer_aircraft_t6c_fuselage_seed_tests)
     add_test(NAME trainer_aircraft_t6c_config_tests COMMAND trainer_aircraft_t6c_config_tests)
 endif()
